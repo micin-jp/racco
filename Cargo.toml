@@ -1,0 +1,18 @@
+[package]
+name = "racco"
+version = "0.1.0"
+authors = ["Daichi Sakai <daisaru11@gmail.com>"]
+
+[dependencies]
+clap = "2.24.2"
+log = "0.3"
+env_logger = "0.3"
+hyper = "0.10.0"
+rusoto_core = {version = "0.26.0"}
+rusoto_credential = {version = "0.7.0"}
+rusoto_ecs = {version = "0.26.0"}
+rusoto_ssm = {version = "0.26.0"}
+serde = "1.0"
+serde_derive = "1.0.8"
+serde_yaml = "0.7.1"
+
