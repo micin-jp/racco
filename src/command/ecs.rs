@@ -2,7 +2,7 @@ use std::error;
 use std::default::Default;
 
 use hyper;
-use rusoto_core::{default_tls_client, DefaultCredentialsProvider, Region};
+use rusoto_core::{DefaultCredentialsProvider};
 use rusoto_ecs;
 use rusoto_ecs::{
   Ecs, EcsClient };
@@ -28,7 +28,7 @@ pub trait EcsExecuter {
         info!("Completed to describe task_definition successfully");
         Ok(res.task_definition)
       }
-      Err(rusoto_ecs::DescribeTaskDefinitionError::Client(s)) => {
+      Err(rusoto_ecs::DescribeTaskDefinitionError::Client(_)) => {
         info!("Not found the task-definition: {}", family);
         Ok(None)
       }
@@ -94,7 +94,7 @@ pub trait EcsExecuter {
     }
   }
 
-  fn update_service(&self, cluster: &str, service_conf: &config::ecs::Service, service: &rusoto_ecs::Service, task_definition: &rusoto_ecs::TaskDefinition) -> Result<rusoto_ecs::Service, Box<error::Error>> {
+  fn update_service(&self, cluster: &str, service_conf: &config::ecs::Service, task_definition: &rusoto_ecs::TaskDefinition) -> Result<rusoto_ecs::Service, Box<error::Error>> {
     debug!("EcsCommand::update_service");
 
     if task_definition.task_definition_arn.is_none() {
@@ -125,7 +125,7 @@ pub trait EcsExecuter {
       ..Default::default()
     };
 
-    let res = try!(self.client().run_task(&req));
+    try!(self.client().run_task(&req));
     info!("Completed to run task successfully");
 
     Ok(())

@@ -3,7 +3,6 @@ use std::error;
 use std::fmt;
 use std::io::prelude::*;
 
-use serde;
 use serde_yaml;
 
 use super::ecs;

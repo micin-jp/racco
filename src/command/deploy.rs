@@ -86,7 +86,7 @@ impl<'c> EcsDeployExecuter<'c> {
       None => try!(self.create_service(cluster, &service_conf, &task_definition_arn))
     };
     
-    try!(self.update_service(cluster, &service_conf, &service, &task_definition));
+    try!(self.update_service(cluster, &service_conf, &task_definition));
 
     try!(self.wait_for_green(&service_conf));
 

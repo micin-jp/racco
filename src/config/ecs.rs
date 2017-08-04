@@ -1,5 +1,4 @@
 
-use serde;
 use rusoto_ecs;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -124,7 +123,6 @@ impl ContainerDefinition {
 
 pub type ContainerDefinitions = Vec<ContainerDefinition>;
 
-pub type Boolean = bool;
 pub type BoxedBoolean = bool;
 pub type BoxedInteger = i64;
 pub type Integer = i64;

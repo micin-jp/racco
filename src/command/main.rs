@@ -3,7 +3,6 @@ use config;
 
 use clap::{Arg, App, SubCommand};
 
-use super::error::CommandError;
 use super::{DeployCommand, RunTaskCommand, ParamsGetCommand, ParamsPutCommand, ParamsDeleteCommand};
 
 pub struct MainCommand {
@@ -76,7 +75,7 @@ impl MainCommand {
         Ok(config) => {
          
             // deploy
-            if let Some(sub_matches) = matches.subcommand_matches("deploy") {
+            if let Some(_) = matches.subcommand_matches("deploy") {
 
                 info!("start deploy");
 

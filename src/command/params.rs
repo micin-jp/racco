@@ -8,8 +8,6 @@ use rusoto_ssm;
 use rusoto_ssm::{Ssm, SsmClient};
 use config;
 
-use super::error::CommandError;
-
 pub trait ParamsExecuter {
 
   fn client(&self) -> SsmClient<DefaultCredentialsProvider, hyper::client::Client> {
@@ -175,7 +173,7 @@ impl<'c> ParamsPutExecuter<'c> {
     };
 
     let client = self.client();
-    let res = try!(client.put_parameter(&req));
+    try!(client.put_parameter(&req));
     info!("put parameter successfully: {} => {}", name, value);
 
     Ok(())
@@ -241,7 +239,7 @@ impl<'c> ParamsDeleteExecuter<'c> {
     };
 
     let client = self.client();
-    let res = try!(client.delete_parameter(&req));
+    try!(client.delete_parameter(&req));
     info!("delete parameter successfully: {}", name);
 
     Ok(())
