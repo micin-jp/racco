@@ -115,6 +115,12 @@ racco params put [NAME] [VALUE]
 racco params delete [NAME]
 ```
 
+#### Setting up AWS Resources
+
+AWS resources below are required to be provisioned before running task:
+
+- KMS key (optional, if you use SecuredString)
+
 #### Example Configuration
 
 Edit your `racco.yml`.
@@ -122,6 +128,8 @@ Edit your `racco.yml`.
 ```yml:racco.yml
 params:
   path: 'racco-params'
+  secure:
+    key: 'XXXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'
 ```
 
 
