@@ -16,6 +16,8 @@ brew install racco
 
 ### `deploy`
 
+```racco deploy [NAME]```
+
 #### Setting up AWS Resources
 
 AWS resources below are required to be provisioned before deployment:
@@ -64,11 +66,9 @@ deploy:
                 awslogs-stream-prefix: 'racco-web-nginx'
 ```
 
-### Run
-
-```racco deploy```
-
 ### `run-task`
+
+```racco run-task [NAME]```
 
 #### Setting up AWS Resources
 
@@ -103,17 +103,27 @@ run_task:
               awslogs-stream-prefix: 'racco-job-echo'
 ```
 
-### Run
-
-```racco run-task [task-name]```
-
 ### `schedule`
 
 WIP
 
 ### `params`
 
-WIP
+```
+racco params get [NAMES]
+racco params put [NAME] [VALUE]
+racco params delete [NAME]
+```
+
+#### Example Configuration
+
+Edit your `racco.yml`.
+
+```yml:racco.yml
+params:
+  path: 'racco-params'
+```
+
 
 
 ## Related projects

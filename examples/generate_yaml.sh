@@ -54,7 +54,7 @@ run_task:
               awslogs-region: 'ap-northeast-1'
               awslogs-stream-prefix: 'racco-job-echo'
 params:
-  path: 'ecs0'
+  path: 'racco-params'
 
 
 YAML
