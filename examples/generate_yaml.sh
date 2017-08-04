@@ -5,7 +5,8 @@ set -eux
 
 cat << YAML > racco.yml
 deploy:
-  - cluster: 'racco-cluster'
+  - name: racco-web
+    cluster: 'racco-cluster'
     service:
       name: 'racco-web'
       desired_count: 4
@@ -35,7 +36,8 @@ deploy:
                 awslogs-region: 'ap-northeast-1'
                 awslogs-stream-prefix: 'racco-web-nginx'
 run_task:
-  - cluster: 'racco-cluster'
+  - name: racco-job
+    cluster: 'racco-cluster'
     task_definition:
       family: 'racco-job'
       task_role_arn: '$(cd ./aws/terraform && terraform output task_role_arn)'

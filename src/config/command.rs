@@ -68,6 +68,7 @@ pub type DeployConfigGroup = Vec<DeployConfig>;
  
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DeployConfig {
+  pub name: String,
   pub cluster: String,
   pub service: ecs::Service,
 }
@@ -76,6 +77,7 @@ pub type RunTaskConfigGroup = Vec<RunTaskConfig>;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RunTaskConfig {
+  pub name: String,
   pub cluster: String,
   pub task_definition: ecs::TaskDefinition,
 }

@@ -25,18 +25,16 @@ impl MainCommand {
                             .takes_value(true))
                     .subcommand(SubCommand::with_name("deploy")
                         .about("deploy ECS service")
-                        .version("0.0.1")
-                        .author("Daichi Sakai. <daisaru11@gmail.com>")
                     )
                     .subcommand(SubCommand::with_name("run-task")
                         .about("run ECS single task")
-                        .version("0.0.1")
-                        .author("Daichi Sakai. <daisaru11@gmail.com>")
+                        .arg(Arg::with_name("NAME")
+                            .help("Task name")
+                            .required(true)
+                            .index(1))
                     )
                     .subcommand(SubCommand::with_name("params")
                         .about("manages parameters")
-                        .version("0.0.1")
-                        .author("Daichi Sakai. <daisaru11@gmail.com>")
                         .subcommand(SubCommand::with_name("get")
                             .about("get parameters")
                             .arg(Arg::with_name("NAMES")
@@ -99,7 +97,7 @@ impl MainCommand {
 
                 info!("start run-task");
 
-                let cmd = RunTaskCommand::from_config(&config);
+                let cmd = RunTaskCommand::from_config(&config, sub_matches);
                 match cmd.run() {
                     Ok(_) => {
                     },
