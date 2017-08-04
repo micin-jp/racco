@@ -7,7 +7,10 @@ AWS ECS Deployment toolbox.
 
 ## Install
 
-WIP
+```
+brew tap micin-jp/racco
+brew install racco
+```
 
 ## Commands
 
@@ -29,7 +32,8 @@ Edit your `racco.yml`.
 
 ```yml:racco.yml
 deploy:
-  - cluster: racco-cluster
+  - name: racco-web
+    cluster: racco-cluster
     service:
       name: racco-web
       desired_count: 4
@@ -80,7 +84,8 @@ Edit your `racco.yml`.
 
 ```yml:racco.yml
 run_task:
-  - cluster: racco-cluster
+  - name: racco-job
+    cluster: racco-cluster
     task_definition:
       family: racco-job
       task_role_arn: 'arn:aws:iam::XXXXXXXXX:role/racco-job-task-role'
