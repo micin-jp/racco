@@ -8,6 +8,8 @@ use rusoto_ssm;
 use rusoto_ssm::{Ssm, SsmClient};
 use config;
 
+use super::error::CommandError;
+
 pub trait ParamsExecuter {
 
   fn client(&self) -> SsmClient<DefaultCredentialsProvider, hyper::client::Client> {
@@ -107,9 +109,20 @@ impl<'c> ParamsGetExecuter<'c> {
 
   fn print(&self, params: &rusoto_ssm::ParameterList) {
     for param in params.iter() {
-      if let (Some(name), Some(value)) = (param.name.as_ref(), param.value.as_ref()) {
-        print!("{}={}", name, value);
+      if let (Some(name_with_path), Some(value)) = (param.name.as_ref(), param.value.as_ref()) {
+        if let Ok(name) = self.strip_path(name_with_path) {
+          println!("{}={} ", name, value);
+        }
       }
+    }
+  }
+
+  fn strip_path<'a>(&self, name: &'a str) -> Result<&'a str, Box<error::Error>> {
+    let path = self.path();
+    if name.starts_with(&path) {
+      return Ok(name.trim_left_matches(&path))
+    } else {
+      Err(Box::new(CommandError::Unknown))
     }
   }
 
