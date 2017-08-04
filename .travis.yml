@@ -1,0 +1,28 @@
+language: rust
+dist: trusty
+matrix:
+  include:
+    - os: osx
+      rust: stable
+      env: TARGET=x86_64-apple-darwin
+    - os: linux
+      rust: stable
+      env: TARGET=x86_64-unknown-linux-gnu
+script:
+  - cargo build --target $TARGET
+  - cargo test --verbose --all
+before_deploy:
+  - cargo build --target $TARGET --release
+  - mkdir "racco-${TRAVIS_TAG}-${TARGET}"
+  - cp target/$TARGET/release/racco LICENSE.txt README.md "racco-${TRAVIS_TAG}-${TARGET}"
+  - zip "racco-${TRAVIS_TAG}-${TARGET}.zip" -r "racco-${TRAVIS_TAG}-${TARGET}"
+deploy:
+  provider: releases
+  api_key:
+    secure: VBOy4nVuM2bzy+IRQXNWKdlZ9dSwRlB4WA3k3Ub3KT/galgQPUIKhv3D4Oc/0lKi9WfsdHNY8zsQ/kCjuc1oR6GWo44r89zjf51C2h3EnKgvRh4oPKxBgC/fteluILbgQIoii66i0+k88uIImrHV5U43edCVGHb+9b3KfYvmraIeZ8VcindsitMjkA+kaEwRcX72JjgI8GsWMAvl9IPrgMZZvKeCqZuqyt29OUBEJP9OHWAVunX9rM8rj8Y+dN3WUI/ZOpJFwtdSP5gR9fVgLArNija96QYLzBhcDLMkFTeNgkMnjyRJ/aorpetMHuyikdi7WmbDnfsMmdG0Q1Occ/N+9b02jG+kKbjzmFW+ZH4kuQpvDB1AeK/15Vp06FgySNTtWRJjGEvyMlkDItvZLY5vNmjcyXBPkws9Nq6nNFVQbW3gkN2PPZXThw4aVeHqzP14T5WgzcBIq8dkIh4g/ztSLeRfu3iZk3QfTFxfprvmE/1Rf73R1esZYzTTBB7MGVd9Ee2OFigxAIIqp/4fUhuxvrMQ6EmozBZbyNo2wYg2Jf8Sxo2sIAwn2ri/kQ99dEOfiljOMZHBKrFkyV5xcom0IKijxbDZHgVbyndVUspfz0eoDYi4gvLJFtc8HkjhzjNQLxI9LkJZS53mmxpqGYGwRywZK+8AX7H+KuaNx88=
+  file: racco-${TRAVIS_TAG}-${TARGET}.zip
+  skip_cleanup: true
+  on:
+    repo: micin-jp/racco
+    tags: true
+

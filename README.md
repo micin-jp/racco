@@ -1,6 +1,8 @@
 
 # Racco
 
+[![Build Status](https://travis-ci.org/micin-jp/racco.svg?branch=master)](https://travis-ci.org/micin-jp/racco)
+
 AWS ECS Deployment toolbox.
 
 ## Install
