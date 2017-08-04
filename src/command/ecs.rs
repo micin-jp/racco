@@ -22,10 +22,20 @@ pub trait EcsExecuter {
       task_definition: family.to_owned()
     };
     
-    let res = try!(self.client().describe_task_definition(&req));
-    info!("Completed to describe task_definition successfully");
 
-    Ok(res.task_definition)
+    match self.client().describe_task_definition(&req) {
+      Ok(res) => {
+        info!("Completed to describe task_definition successfully");
+        Ok(res.task_definition)
+      }
+      Err(rusoto_ecs::DescribeTaskDefinitionError::Client(s)) => {
+        info!("Not found the task-definition: {}", family);
+        Ok(None)
+      }
+      Err(e) => {
+        Err(Box::new(e))
+      }
+    }
   }
 
   fn register_task_definition(&self, task_definition_conf: &config::ecs::TaskDefinition) -> Result<rusoto_ecs::TaskDefinition, Box<error::Error>> {
