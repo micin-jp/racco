@@ -55,6 +55,8 @@ run_task:
               awslogs-stream-prefix: 'racco-job-echo'
 params:
   path: 'racco-params'
+  secure:
+    key: '$(cd ./aws/terraform && terraform output kms_key_id)'
 
 
 YAML

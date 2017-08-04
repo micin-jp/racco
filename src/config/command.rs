@@ -84,4 +84,10 @@ pub struct RunTaskConfig {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ParamsConfig {
   pub path: String,
+  pub secure: Option<ParamsSecure>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ParamsSecure {
+  pub key: String,
 }

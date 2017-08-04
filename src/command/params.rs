@@ -86,8 +86,11 @@ impl<'c> ParamsGetExecuter<'c> {
 
     let names_with_path = names.iter().map(|n| self.name_with_path(n)).collect();
 
+    let with_decription = self.config.secure.is_some();
+
     let req = rusoto_ssm::GetParametersRequest {
       names: names_with_path,
+      with_decryption: Some(with_decription),
       ..Default::default()
     };
 
@@ -164,10 +167,17 @@ impl<'c> ParamsPutExecuter<'c> {
   pub fn run(&self, name: &str, value: &str) -> Result<(), Box<error::Error>> {
     debug!("ParamsPutExecuter::run");
 
+    let (type_, key_id) = if let Some(secure) = self.config.secure.as_ref() {
+      (String::from("SecureString"), Some(secure.key.to_owned()))
+    } else {
+      (String::from("String"), None)
+    };
+
     let req = rusoto_ssm::PutParameterRequest {
       name: self.name_with_path(name),
       value: value.to_owned(),
-      type_: String::from("String"),
+      type_: type_,
+      key_id: key_id,
       overwrite: Some(true),
       ..Default::default()
     };
