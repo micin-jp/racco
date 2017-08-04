@@ -24,6 +24,9 @@ impl MainCommand {
                             .takes_value(true))
                     .subcommand(SubCommand::with_name("deploy")
                         .about("deploy ECS service")
+                        .arg(Arg::with_name("NAME")
+                            .help("Task name")
+                            .index(1))
                     )
                     .subcommand(SubCommand::with_name("run-task")
                         .about("run ECS single task")
@@ -75,11 +78,11 @@ impl MainCommand {
         Ok(config) => {
          
             // deploy
-            if let Some(_) = matches.subcommand_matches("deploy") {
+            if let Some(sub_matches) = matches.subcommand_matches("deploy") {
 
                 info!("start deploy");
 
-                let cmd = DeployCommand::from_config(&config);
+                let cmd = DeployCommand::from_config(&config, sub_matches);
                 match cmd.run() {
                     Ok(_) => {
                     },

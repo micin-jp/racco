@@ -2,6 +2,7 @@ use std::error;
 use std::time::Duration;
 use std::thread::sleep;
 
+use clap;
 use hyper;
 use rusoto_core::{default_tls_client, DefaultCredentialsProvider, Region};
 use rusoto_ecs;
@@ -14,22 +15,32 @@ use super::ecs::EcsExecuter;
 pub struct DeployCommand<'c>
 {
   config: &'c config::command::Config,
+  args: &'c clap::ArgMatches<'c>,
 }
 
 impl<'c> DeployCommand<'c> {
-  pub fn from_config(config: &'c config::command::Config) -> Self {
+  pub fn from_config(config: &'c config::command::Config, args: &'c clap::ArgMatches<'c>) -> Self {
     debug!("DeployCommand::new");
 
     DeployCommand { 
       config: config,
+      args: args,
     }
   }
 
   pub fn run(&self) -> Result<(), Box<error::Error>> {
     debug!("DeployCommand::run");
 
+    let option_name = self.args.value_of("NAME");
+
     if let Some(deploy_config_group) = self.config.deploy.as_ref() {
       for deploy_config in deploy_config_group {
+        if let Some(name) = option_name {
+          if name != deploy_config.name {
+            continue;
+          }
+        }
+
         let ecs_deploy_cmd = EcsDeployExecuter::from_config(&deploy_config);
         try!(ecs_deploy_cmd.run());
       }
