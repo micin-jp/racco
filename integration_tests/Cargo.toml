@@ -1,0 +1,11 @@
+[package]
+name = "racco_integration_test"
+version = "0.1.0"
+authors = ["Daichi Sakai <daisaru11@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/micin-jp/racco"
+
+[dependencies.racco]
+path = '..'
+version = "0.1.0"
+
