@@ -40,16 +40,29 @@ pub trait ParamsExecuter {
 
 pub struct ParamsGetCommand<'c> {
   config: &'c config::command::Config,
-  args: &'c clap::ArgMatches<'c>,
+  names: Vec<&'c str>,
 }
 
 impl<'c> ParamsGetCommand<'c> {
-  pub fn from_config(config: &'c config::command::Config, args: &'c clap::ArgMatches<'c>) -> Self {
+  pub fn from_args(config: &'c config::command::Config, args: &'c clap::ArgMatches<'c>) -> Self {
+    debug!("ParamsGetCommand::from_args");
+
+    let names = args.value_of("NAMES").unwrap()
+        .split(",")
+        .collect::<Vec<&str>>();
+
+    ParamsGetCommand { 
+      config: config,
+      names: names,
+    }
+  }
+
+  pub fn new(config: &'c config::command::Config, names: &'c Vec<&'c str>) -> Self {
     debug!("ParamsGetCommand::new");
 
     ParamsGetCommand { 
       config: config,
-      args: args,
+      names: names.to_owned(),
     }
   }
 
@@ -57,12 +70,8 @@ impl<'c> ParamsGetCommand<'c> {
     debug!("ParamsGetCommand::run");
     if let Some(params_config) = self.config.params.as_ref() {
 
-      let names = self.args.value_of("NAMES").unwrap()
-          .split(",")
-          .collect::<Vec<&str>>();
-
       let exec = ParamsGetExecuter::from_config(params_config);
-      try!(exec.run(&names));
+      try!(exec.run(&self.names));
     }
     Ok(())
   }
@@ -137,27 +146,36 @@ impl<'c> ParamsExecuter for ParamsGetExecuter<'c> {
 
 pub struct ParamsPutCommand<'c> {
   config: &'c config::command::Config,
-  args: &'c clap::ArgMatches<'c>,
+  name: &'c str,
+  value: &'c str,
 }
 
 impl<'c> ParamsPutCommand<'c> {
-  pub fn from_config(config: &'c config::command::Config, args: &'c clap::ArgMatches<'c>) -> Self {
+  pub fn from_args(config: &'c config::command::Config, args: &'c clap::ArgMatches<'c>) -> Self {
+    debug!("ParamsPutCommand::from_args");
+    ParamsPutCommand { 
+      config: config,
+      name: args.value_of("NAME").unwrap(),
+      value: args.value_of("VALUE").unwrap(),
+    }
+  }
+
+  pub fn new(config: &'c config::command::Config, name: &'c str, value: &'c str) -> Self {
     debug!("ParamsPutCommand::new");
     ParamsPutCommand { 
       config: config,
-      args: args,
+      name: name,
+      value: value,
     }
   }
 
   pub fn run(&self) -> Result<(), Box<error::Error>> {
     debug!("ParamsPutCommand::run");
     if let Some(params_config) = self.config.params.as_ref() {
-      let name = self.args.value_of("NAME").unwrap();
-      let val = self.args.value_of("VALUE").unwrap();
 
       let exec = ParamsPutExecuter::from_config(&params_config);
 
-      try!(exec.run(name, val));
+      try!(exec.run(self.name, self.value));
     }
     Ok(())
   }
@@ -213,16 +231,25 @@ impl<'c> ParamsExecuter for ParamsPutExecuter<'c> {
 
 pub struct ParamsDeleteCommand<'c> {
   config: &'c config::command::Config,
-  args: &'c clap::ArgMatches<'c>,
+  name: &'c str,
 }
 
 impl<'c> ParamsDeleteCommand<'c> {
-  pub fn from_config(config: &'c config::command::Config, args: &'c clap::ArgMatches<'c>) -> Self {
+  pub fn from_args(config: &'c config::command::Config, args: &'c clap::ArgMatches<'c>) -> Self {
+    debug!("ParamsDeleteCommand::from_args");
+
+    ParamsDeleteCommand { 
+      config: config,
+      name: args.value_of("NAME").unwrap(),
+    }
+  }
+
+  pub fn new(config: &'c config::command::Config, name: &'c str) -> Self {
     debug!("ParamsDeleteCommand::new");
 
     ParamsDeleteCommand { 
       config: config,
-      args: args,
+      name: name,
     }
   }
 
@@ -230,11 +257,9 @@ impl<'c> ParamsDeleteCommand<'c> {
     debug!("ParamsDeleteCommand::run");
 
     if let Some(params_config) = self.config.params.as_ref() {
-      let name = self.args.value_of("NAME").unwrap();
-
       let exec = ParamsDeleteExecuter::from_config(&params_config);
 
-      try!(exec.run(name));
+      try!(exec.run(self.name));
     }
     Ok(())
   }

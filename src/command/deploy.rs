@@ -15,27 +15,34 @@ use super::ecs::EcsExecuter;
 pub struct DeployCommand<'c>
 {
   config: &'c config::command::Config,
-  args: &'c clap::ArgMatches<'c>,
+  name: Option<&'c str>,
 }
 
 impl<'c> DeployCommand<'c> {
-  pub fn from_config(config: &'c config::command::Config, args: &'c clap::ArgMatches<'c>) -> Self {
+  pub fn from_args(config: &'c config::command::Config, args: &'c clap::ArgMatches<'c>) -> Self {
     debug!("DeployCommand::new");
 
     DeployCommand { 
       config: config,
-      args: args,
+      name: args.value_of("NAME"),
+    }
+  }
+
+  pub fn new(config: &'c config::command::Config, name: Option<&'c str>) -> Self {
+    debug!("DeployCommand::new");
+
+    DeployCommand { 
+      config: config,
+      name: name,
     }
   }
 
   pub fn run(&self) -> Result<(), Box<error::Error>> {
     debug!("DeployCommand::run");
 
-    let option_name = self.args.value_of("NAME");
-
     if let Some(deploy_config_group) = self.config.deploy.as_ref() {
       for deploy_config in deploy_config_group {
-        if let Some(name) = option_name {
+        if let Some(name) = self.name {
           if name != deploy_config.name {
             continue;
           }

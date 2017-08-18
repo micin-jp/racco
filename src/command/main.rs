@@ -82,7 +82,7 @@ impl MainCommand {
 
                 info!("start deploy");
 
-                let cmd = DeployCommand::from_config(&config, sub_matches);
+                let cmd = DeployCommand::from_args(&config, sub_matches);
                 match cmd.run() {
                     Ok(_) => {
                     },
@@ -99,7 +99,7 @@ impl MainCommand {
 
                 info!("start run-task");
 
-                let cmd = RunTaskCommand::from_config(&config, sub_matches);
+                let cmd = RunTaskCommand::from_args(&config, sub_matches);
                 match cmd.run() {
                     Ok(_) => {
                     },
@@ -116,7 +116,7 @@ impl MainCommand {
                 if let Some(sub1_matches) = sub0_matches.subcommand_matches("get") {
                     info!("start params get");
 
-                    let cmd = ParamsGetCommand::from_config(&config, sub1_matches);
+                    let cmd = ParamsGetCommand::from_args(&config, sub1_matches);
                     match cmd.run() {
                         Ok(_) => {
                         },
@@ -130,7 +130,7 @@ impl MainCommand {
                 if let Some(sub1_matches) = sub0_matches.subcommand_matches("put") {
                     info!("start params put");
 
-                    let cmd = ParamsPutCommand::from_config(&config, sub1_matches);
+                    let cmd = ParamsPutCommand::from_args(&config, sub1_matches);
                     match cmd.run() {
                         Ok(_) => {
                         },
@@ -144,7 +144,7 @@ impl MainCommand {
                 if let Some(sub1_matches) = sub0_matches.subcommand_matches("delete") {
                     info!("start params delete");
 
-                    let cmd = ParamsDeleteCommand::from_config(&config, sub1_matches);
+                    let cmd = ParamsDeleteCommand::from_args(&config, sub1_matches);
                     match cmd.run() {
                         Ok(_) => {
                         },

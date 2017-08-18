@@ -11,27 +11,34 @@ use super::ecs::EcsExecuter;
 
 pub struct RunTaskCommand<'c> {
   config: &'c config::command::Config,
-  args: &'c clap::ArgMatches<'c>,
+  name: &'c str,
 }
 
 impl<'c> RunTaskCommand<'c> {
-  pub fn from_config(config: &'c config::command::Config, args: &'c clap::ArgMatches<'c>) -> Self {
+  pub fn from_args(config: &'c config::command::Config, args: &'c clap::ArgMatches<'c>) -> Self {
     debug!("RunTaskCommand::new");
 
     RunTaskCommand { 
       config: config,
-      args: args,
+      name: args.value_of("NAME").unwrap(),
+    }
+  }
+
+  pub fn new(config: &'c config::command::Config, name: &'c str) -> Self {
+    debug!("RunTaskCommand::new");
+
+    RunTaskCommand { 
+      config: config,
+      name: name,
     }
   }
 
   pub fn run(&self) -> Result<(), Box<error::Error>> {
     debug!("RunTaskCommand::run");
 
-    let name = self.args.value_of("NAME").unwrap();
-
     if let Some(run_task_config_group) = self.config.run_task.as_ref() {
       for run_task_config in run_task_config_group {
-        if run_task_config.name != name {
+        if run_task_config.name != self.name {
           continue;
         }
 
