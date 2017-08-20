@@ -38,6 +38,7 @@ impl error::Error for ConfigError {
 pub struct Config {
   pub deploy: Option<DeployConfigGroup>,
   pub run_task: Option<RunTaskConfigGroup>,
+  pub schedule: Option<ScheduleConfigGroup>,
   pub params: Option<ParamsConfig>
 }
 
@@ -76,6 +77,15 @@ pub type RunTaskConfigGroup = Vec<RunTaskConfig>;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RunTaskConfig {
+  pub name: String,
+  pub cluster: String,
+  pub task_definition: ecs::TaskDefinition,
+}
+
+pub type ScheduleConfigGroup = Vec<ScheduleConfig>;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ScheduleConfig {
   pub name: String,
   pub cluster: String,
   pub task_definition: ecs::TaskDefinition,

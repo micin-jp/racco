@@ -4,6 +4,7 @@ mod ecs;
 mod error;
 mod params;
 mod run_task;
+mod schedule;
 
 pub use self::main::MainCommand;
 pub use self::deploy::DeployCommand;
