@@ -16,5 +16,7 @@ fn deploy_service() {
   // second time
   let res2 = cmd.run();
   assert!(res2.is_ok());
+
+  // TODO: assert http response from nginx container
 }
 

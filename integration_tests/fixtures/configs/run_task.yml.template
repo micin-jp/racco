@@ -1,0 +1,18 @@
+run_task:
+  - name: racco-test-job
+    cluster: 'racco-test-cluster'
+    task_definition:
+      family: 'racco-test-job'
+      task_role_arn: '${TASK_ROLE_ARN}'
+      network_mode: bridge
+      container_definitions:
+        - name: echo
+          image: '${ECHO_IMAGE}'
+          cpu: 20
+          memory: 128
+          log_configuration:
+            log_driver: awslogs
+            options:
+              awslogs-group: '${AWSLOGS_GROUP}'
+              awslogs-region: '${AWS_REGION}'
+              awslogs-stream-prefix: 'racco-job-echo'

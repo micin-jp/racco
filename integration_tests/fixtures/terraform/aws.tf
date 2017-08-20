@@ -5,3 +5,7 @@ provider "aws" {
 }
 
 data "aws_caller_identity" "aws-identity" { }
+
+output "aws_region" {
+    value = "${var.aws_region}"
+}
