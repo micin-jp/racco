@@ -16,9 +16,9 @@ fi
 
 ## Terraform
 
-cd ./terraform
+cd "${DIR}/terraform"
 #terraform plan
-#terraform apply
+terraform apply
 
 ## Docker images
 
@@ -38,4 +38,7 @@ for image in "${DOCKER_IMAGES[@]}"; do
 	docker push ${remote_name}:${tag}
 done
 
+
+cd "${DIR}/configs"
+./generate.sh
 

@@ -28,6 +28,8 @@ resource "aws_alb_target_group" "lb-target-group" {
     vpc_id   = "${aws_vpc.main.id}"
     health_check {
         path = "/"
+        interval = 10
+        healthy_threshold = 2
     }
 }
 

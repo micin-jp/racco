@@ -1,0 +1,22 @@
+deploy:
+  - name: racco-test-web
+    cluster: 'racco-test-cluster'
+    service:
+      name: 'racco-test-web'
+      desired_count: 2
+      role: '${SERVICE_ROLE_ARN}'
+      load_balancers:
+        - target_group_arn: '${LB_TARGET_GROUP_ARN}'
+          container_name: "nginx"
+          container_port: 80
+      task_definition:
+        family: 'racco-test-web'
+        task_role_arn: '${TASK_ROLE_ARN}'
+        network_mode: bridge
+        container_definitions:
+          - name: nginx
+            image: '${NGINX_IMAGE}'
+            cpu: 20
+            memory: 128
+            port_mappings:
+              - container_port: 80
