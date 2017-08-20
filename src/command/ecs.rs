@@ -13,7 +13,7 @@ use super::error::CommandError;
 
 pub trait EcsExecuter {
 
-  fn client(&self) -> &EcsClient<DefaultCredentialsProvider, hyper::client::Client>;
+  fn ecs_client(&self) -> &EcsClient<DefaultCredentialsProvider, hyper::client::Client>;
 
   fn describe_latest_task_definition(&self, family: &str) -> Result<Option<rusoto_ecs::TaskDefinition>, Box<error::Error>> {
     debug!("EcsCommand::describe_latest_task_definition");
@@ -23,7 +23,7 @@ pub trait EcsExecuter {
     };
     
 
-    match self.client().describe_task_definition(&req) {
+    match self.ecs_client().describe_task_definition(&req) {
       Ok(res) => {
         info!("Completed to describe task_definition successfully");
         Ok(res.task_definition)
@@ -48,7 +48,7 @@ pub trait EcsExecuter {
       ..Default::default()
     };
 
-    let res = try!(self.client().register_task_definition(&req));
+    let res = try!(self.ecs_client().register_task_definition(&req));
     info!("Completed to register task_definition successfully");
 
     res.task_definition.ok_or(Box::new(CommandError::Unknown))
@@ -68,7 +68,7 @@ pub trait EcsExecuter {
       ..Default::default()
     };
 
-    let res = try!(self.client().create_service(&req));
+    let res = try!(self.ecs_client().create_service(&req));
     info!("Completed to create service successfully");
 
     res.service.ok_or(Box::new(CommandError::Unknown))
@@ -82,7 +82,7 @@ pub trait EcsExecuter {
       services: vec![service_conf.name.to_owned()]
     };
 
-    let res = try!(self.client().describe_services(&req));
+    let res = try!(self.ecs_client().describe_services(&req));
     info!("Completed to describe services successfully");
 
     match res.services {
@@ -110,7 +110,7 @@ pub trait EcsExecuter {
       ..Default::default()
     };
 
-    let res = try!(self.client().update_service(&req));
+    let res = try!(self.ecs_client().update_service(&req));
     info!("Completed to update service successfully");
 
     let service = res.service.map(|s| { s.to_owned() });
@@ -125,7 +125,7 @@ pub trait EcsExecuter {
       ..Default::default()
     };
 
-    try!(self.client().run_task(&req));
+    try!(self.ecs_client().run_task(&req));
     info!("Completed to run task successfully");
 
     Ok(())

@@ -20,7 +20,7 @@ pub struct DeployCommand<'c>
 
 impl<'c> DeployCommand<'c> {
   pub fn from_args(config: &'c config::command::Config, args: &'c clap::ArgMatches<'c>) -> Self {
-    debug!("DeployCommand::new");
+    debug!("DeployCommand::from_args");
 
     DeployCommand { 
       config: config,
@@ -48,7 +48,7 @@ impl<'c> DeployCommand<'c> {
           }
         }
 
-        let ecs_deploy_cmd = EcsDeployExecuter::from_config(&deploy_config);
+        let ecs_deploy_cmd = DeployExecuter::from_config(&deploy_config);
         try!(ecs_deploy_cmd.run());
       }
     }
@@ -58,26 +58,26 @@ impl<'c> DeployCommand<'c> {
 }
 
 
-pub struct EcsDeployExecuter<'c>
+pub struct DeployExecuter<'c>
 {
-  client: EcsClient<DefaultCredentialsProvider, hyper::client::Client>,
+  ecs_client: EcsClient<DefaultCredentialsProvider, hyper::client::Client>,
   config: &'c config::command::DeployConfig
 }
 
-impl<'c> EcsDeployExecuter<'c> {
+impl<'c> DeployExecuter<'c> {
   pub fn from_config(config: &'c config::command::DeployConfig) -> Self {
-    debug!("EcsCommand::new");
+    debug!("DeployExecuter::from_config");
 
     let credentials = DefaultCredentialsProvider::new().unwrap();
     let client = EcsClient::new(default_tls_client().unwrap(), credentials, Region::ApNortheast1);
-    EcsDeployExecuter { 
-      client: client,
+    DeployExecuter { 
+      ecs_client: client,
       config: config
     }
   }
 
   pub fn run(&self) -> Result<(), Box<error::Error>> {
-    debug!("EcsCommand::run");
+    debug!("DeployExecuter::run");
 
     let service_conf = &self.config.service;
     let cluster = &self.config.cluster;
@@ -142,8 +142,8 @@ impl<'c> EcsDeployExecuter<'c> {
   }
 }
 
-impl<'c> EcsExecuter for EcsDeployExecuter<'c> {
-  fn client(&self) -> &EcsClient<DefaultCredentialsProvider, hyper::client::Client> {
-    &self.client
+impl<'c> EcsExecuter for DeployExecuter<'c> {
+  fn ecs_client(&self) -> &EcsClient<DefaultCredentialsProvider, hyper::client::Client> {
+    &self.ecs_client
   }
 }

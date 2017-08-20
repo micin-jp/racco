@@ -16,7 +16,7 @@ pub struct RunTaskCommand<'c> {
 
 impl<'c> RunTaskCommand<'c> {
   pub fn from_args(config: &'c config::command::Config, args: &'c clap::ArgMatches<'c>) -> Self {
-    debug!("RunTaskCommand::new");
+    debug!("RunTaskCommand::from_args");
 
     RunTaskCommand { 
       config: config,
@@ -42,7 +42,7 @@ impl<'c> RunTaskCommand<'c> {
           continue;
         }
 
-        let ecs_run_task_cmd = EcsRunTaskExecuter::from_config(&run_task_config);
+        let ecs_run_task_cmd = RunTaskExecuter::from_config(&run_task_config);
         try!(ecs_run_task_cmd.run());
       }
     }
@@ -52,20 +52,20 @@ impl<'c> RunTaskCommand<'c> {
 }
 
 
-pub struct EcsRunTaskExecuter<'c>
+pub struct RunTaskExecuter<'c>
 {
-  client: EcsClient<DefaultCredentialsProvider, hyper::client::Client>,
+  ecs_client: EcsClient<DefaultCredentialsProvider, hyper::client::Client>,
   config: &'c config::command::RunTaskConfig
 }
 
-impl<'c> EcsRunTaskExecuter<'c> {
+impl<'c> RunTaskExecuter<'c> {
   pub fn from_config(config: &'c config::command::RunTaskConfig) -> Self {
-    debug!("EcsRunTaskCommand::new");
+    debug!("RunTaskExecuter::from_config");
 
     let credentials = DefaultCredentialsProvider::new().unwrap();
     let client = EcsClient::new(default_tls_client().unwrap(), credentials, Region::ApNortheast1);
-    EcsRunTaskExecuter { 
-      client: client,
+    RunTaskExecuter { 
+      ecs_client: client,
       config: config
     }
   }
@@ -81,8 +81,8 @@ impl<'c> EcsRunTaskExecuter<'c> {
   }
 }
 
-impl<'c> EcsExecuter for EcsRunTaskExecuter<'c> {
-  fn client(&self) -> &EcsClient<DefaultCredentialsProvider, hyper::client::Client> {
-    &self.client
+impl<'c> EcsExecuter for RunTaskExecuter<'c> {
+  fn ecs_client(&self) -> &EcsClient<DefaultCredentialsProvider, hyper::client::Client> {
+    &self.ecs_client
   }
 }
