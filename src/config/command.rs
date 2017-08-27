@@ -6,6 +6,7 @@ use std::io::prelude::*;
 use serde_yaml;
 
 use super::ecs;
+use super::cloudwatch_events;
 
 #[derive(Debug)]
 pub enum ConfigError {
@@ -38,7 +39,7 @@ impl error::Error for ConfigError {
 pub struct Config {
   pub deploy: Option<DeployConfigGroup>,
   pub run_task: Option<RunTaskConfigGroup>,
-  pub schedule: Option<ScheduleConfigGroup>,
+  pub schedule_task: Option<ScheduleTaskConfigGroup>,
   pub params: Option<ParamsConfig>
 }
 
@@ -82,13 +83,15 @@ pub struct RunTaskConfig {
   pub task_definition: ecs::TaskDefinition,
 }
 
-pub type ScheduleConfigGroup = Vec<ScheduleConfig>;
+pub type ScheduleTaskConfigGroup = Vec<ScheduleTaskConfig>;
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct ScheduleConfig {
+pub struct ScheduleTaskConfig {
   pub name: String,
   pub cluster: String,
   pub task_definition: ecs::TaskDefinition,
+  pub rule: cloudwatch_events::ScheduleRule,
+  pub rule_targets_role_arn: Option<String>
 }
 
 #[derive(Debug, Serialize, Deserialize)]

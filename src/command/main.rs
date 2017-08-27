@@ -3,7 +3,7 @@ use config;
 
 use clap::{Arg, App, SubCommand};
 
-use super::{DeployCommand, RunTaskCommand, ParamsGetCommand, ParamsPutCommand, ParamsDeleteCommand};
+use super::{DeployCommand, RunTaskCommand, ScheduleTaskCommand, ParamsGetCommand, ParamsPutCommand, ParamsDeleteCommand};
 
 pub struct MainCommand {
 }
@@ -25,13 +25,20 @@ impl MainCommand {
                     .subcommand(SubCommand::with_name("deploy")
                         .about("deploy ECS service")
                         .arg(Arg::with_name("NAME")
-                            .help("Task name")
+                            .help("name")
                             .index(1))
                     )
                     .subcommand(SubCommand::with_name("run-task")
                         .about("run ECS single task")
                         .arg(Arg::with_name("NAME")
-                            .help("Task name")
+                            .help("name")
+                            .required(true)
+                            .index(1))
+                    )
+                    .subcommand(SubCommand::with_name("schedule-task")
+                        .about("deploy ECS task scheduled by Cloudwatch events")
+                        .arg(Arg::with_name("NAME")
+                            .help("name")
                             .required(true)
                             .index(1))
                     )
@@ -109,6 +116,23 @@ impl MainCommand {
                 }
 
                 info!("end run-task");
+            }
+
+            // schedule
+            if let Some(sub_matches) = matches.subcommand_matches("schedule-task") {
+
+                info!("start schedule-task");
+
+                let cmd = ScheduleTaskCommand::from_args(&config, sub_matches);
+                match cmd.run() {
+                    Ok(_) => {
+                    },
+                    Err(error) => {
+                        error!("schedule-task failed: {}", error)
+                    }
+                }
+
+                info!("end schdule-task");
             }
 
             // params

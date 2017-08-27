@@ -15,6 +15,25 @@ pub trait EcsExecuter {
 
   fn ecs_client(&self) -> &EcsClient<DefaultCredentialsProvider, hyper::client::Client>;
 
+  fn describe_cluster(&self, name: &str) -> Result<Option<rusoto_ecs::Cluster>, Box<error::Error>> {
+    debug!("EcsCommand::describe_cluster");
+
+    let req = rusoto_ecs::DescribeClustersRequest {
+      clusters: Some(vec!(name.to_owned())),
+    };
+
+    let res = try!(self.ecs_client().describe_clusters(&req));
+    info!("Completed to describe clusters successfully");
+
+    match res.clusters {
+      Some(clusters) => {
+        let actives = clusters.iter().filter(|cluster| cluster.status.is_some() && cluster.status.as_ref().unwrap() == "ACTIVE").collect::<Vec<&rusoto_ecs::Cluster>>();
+        Ok(actives.first().cloned().cloned())
+      },
+      _ => Err(Box::new(CommandError::Unknown))
+    }
+  }
+
   fn describe_latest_task_definition(&self, family: &str) -> Result<Option<rusoto_ecs::TaskDefinition>, Box<error::Error>> {
     debug!("EcsCommand::describe_latest_task_definition");
 

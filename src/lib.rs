@@ -14,6 +14,7 @@ extern crate rusoto_core;
 extern crate rusoto_credential;
 extern crate rusoto_ecs;
 extern crate rusoto_ssm;
+extern crate rusoto_events;
 
 pub mod command;
 pub mod config;
