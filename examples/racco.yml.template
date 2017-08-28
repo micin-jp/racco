@@ -1,0 +1,78 @@
+deploy:
+  - name: racco-web
+    cluster: 'racco-cluster'
+    service:
+      name: 'racco-web'
+      desired_count: 4
+      deployment_configuration:
+        maximum_percent: 200
+        minimum_healthy_percent: 100
+      role: '$SERVICE_ROLE_ARN'
+      load_balancers:
+        - target_group_arn: '$LB_TARGET_GROUP_ARN'
+          container_name: "nginx"
+          container_port: 80
+      task_definition:
+        family: 'racco-web'
+        task_role_arn: '$TASK_ROLE_ARN'
+        network_mode: bridge
+        container_definitions:
+          - name: nginx
+            image: '$NGINX_IMAGE'
+            cpu: 20
+            memory: 128
+            port_mappings:
+              - container_port: 80
+            log_configuration:
+              log_driver: awslogs
+              options:
+                awslogs-group: '$AWSLOGS_GROUP'
+                awslogs-region: 'ap-northeast-1'
+                awslogs-stream-prefix: 'racco-web-nginx'
+run_task:
+  - name: racco-job
+    cluster: 'racco-cluster'
+    task_definition:
+      family: 'racco-job'
+      task_role_arn: '$TASK_ROLE_ARN'
+      network_mode: bridge
+      container_definitions:
+        - name: echo
+          image: '$ECHO_IMAGE'
+          cpu: 20
+          memory: 128
+          log_configuration:
+            log_driver: awslogs
+            options:
+              awslogs-group: '$AWSLOGS_GROUP'
+              awslogs-region: 'ap-northeast-1'
+              awslogs-stream-prefix: 'racco-job-echo'
+schedule_task:
+  - name: racco-schedule-job
+    cluster: 'racco-cluster'
+    rule:
+      name: racco-schedule-job-rule
+      schedule_expression: 'cron(0/5 * * * ? *)'
+    rule_targets_role_arn: '$EVENTS_TARGET_ROLE_ARN'
+    task_definition:
+      family: 'racco-schedule-job'
+      task_role_arn: '$TASK_ROLE_ARN'
+      network_mode: bridge
+      container_definitions:
+        - name: echo
+          image: '$ECHO_IMAGE'
+          cpu: 20
+          memory: 128
+          log_configuration:
+            log_driver: awslogs
+            options:
+              awslogs-group: '$AWSLOGS_GROUP'
+              awslogs-region: 'ap-northeast-1'
+              awslogs-stream-prefix: 'racco-schedule-job-echo'
+params:
+  path: 'racco-params'
+  secure:
+    key: '$KMS_KEY_ID'
+
+
+

@@ -1,62 +1,27 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
-set -eux
+set -e
 
-
-cat << YAML > racco.yml
-deploy:
-  - name: racco-web
-    cluster: 'racco-cluster'
-    service:
-      name: 'racco-web'
-      desired_count: 4
-      deployment_configuration:
-        maximum_percent: 200
-        minimum_healthy_percent: 100
-      role: '$(cd ./aws/terraform && terraform output cluster_service_role_arn)'
-      load_balancers:
-        - target_group_arn: '$(cd ./aws/terraform && terraform output alb_target_group_arn)'
-          container_name: "nginx"
-          container_port: 80
-      task_definition:
-        family: 'racco-web'
-        task_role_arn: '$(cd ./aws/terraform && terraform output task_role_arn)'
-        network_mode: bridge
-        container_definitions:
-          - name: nginx
-            image: '$(cd ./aws/terraform && terraform output repository_url_nginx):latest'
-            cpu: 20
-            memory: 128
-            port_mappings:
-              - container_port: 80
-            log_configuration:
-              log_driver: awslogs
-              options:
-                awslogs-group: '$(cd ./aws/terraform && terraform output awslogs_group)'
-                awslogs-region: 'ap-northeast-1'
-                awslogs-stream-prefix: 'racco-web-nginx'
-run_task:
-  - name: racco-job
-    cluster: 'racco-cluster'
-    task_definition:
-      family: 'racco-job'
-      task_role_arn: '$(cd ./aws/terraform && terraform output task_role_arn)'
-      network_mode: bridge
-      container_definitions:
-        - name: echo
-          image: '$(cd ./aws/terraform && terraform output repository_url_echo):latest'
-          cpu: 20
-          memory: 128
-          log_configuration:
-            log_driver: awslogs
-            options:
-              awslogs-group: '$(cd ./aws/terraform && terraform output awslogs_group)'
-              awslogs-region: 'ap-northeast-1'
-              awslogs-stream-prefix: 'racco-job-echo'
-params:
-  path: 'racco-params'
-  secure:
-    key: '$(cd ./aws/terraform && terraform output kms_key_id)'
+DIR=$(cd $(dirname $BASH_SOURCE); pwd)
+cd ${DIR}
 
 
-YAML
+# export variables
+
+
+cd "${DIR}/aws/terraform"
+
+export SERVICE_ROLE_ARN="$(terraform output cluster_service_role_arn)"
+export LB_TARGET_GROUP_ARN="$(terraform output alb_target_group_arn)"
+export TASK_ROLE_ARN="$(terraform output task_role_arn)"
+export NGINX_IMAGE="$(terraform output repository_url_nginx):latest"
+export ECHO_IMAGE="$(terraform output repository_url_echo):latest"
+export AWSLOGS_GROUP="$(terraform output awslogs_group)"
+export KMS_KEY_ID="$(terraform output kms_key_id)"
+export EVENTS_TARGET_ROLE_ARN="$(terraform output events_target_role_arn)"
+
+# generate templates
+
+cd "${DIR}"
+cat racco.yml.template | envsubst > racco.yml
+
