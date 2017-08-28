@@ -103,9 +103,46 @@ run_task:
               awslogs-stream-prefix: 'racco-job-echo'
 ```
 
-### `schedule`
+### `schedule-task`
 
-WIP
+```
+racco schedule-task [NAME]
+```
+
+#### Setting up AWS Resources
+
+AWS resources below are required to be provisioned:
+
+- ECS cluster
+- IAM role for ECS Task
+- ECR repository for docker image (optional)
+- IAM role to run ECS Task from CloudWatch Events
+
+#### Example Configuration
+
+Edit your `racco.yml`.
+
+```yml:racco.yml
+schedule_task:
+  - name: racco-schedule-job
+    cluster: 'racco-cluster'
+    rule:
+      name: racco-schedule-job-rule
+      schedule_expression: 'cron(0/5 * * * ? *)'
+    rule_targets_role_arn: 'arn:aws:iam::XXXXXXXXXX:role/racco-events-target-role'
+    task_definition:
+      family: 'racco-schedule-job'
+      task_role_arn: 'arn:aws:iam::XXXXXXXXXX:role/racco-task-role'
+      network_mode: bridge
+      container_definitions:
+        - name: echo
+          image: 'XXXXXXXXXX.dkr.ecr.ap-northeast-1.amazonaws.com/racco/echo:latest'
+          cpu: 20
+          memory: 128
+```
+
+
+
 
 ### `params`
 
@@ -117,7 +154,7 @@ racco params delete [NAME]
 
 #### Setting up AWS Resources
 
-AWS resources below are required to be provisioned before running task:
+AWS resources below are required to be provisioned:
 
 - KMS key (optional, if you use SecuredString)
 
