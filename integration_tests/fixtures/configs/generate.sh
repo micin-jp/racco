@@ -18,12 +18,13 @@ export TASK_ROLE_ARN="$(terraform output task_role_arn)"
 export NGINX_IMAGE="$(terraform output repository_url_nginx):latest"
 export ECHO_IMAGE="$(terraform output repository_url_echo):latest"
 export AWSLOGS_GROUP="$(terraform output awslogs_group)"
+export EVENTS_TARGET_ROLE_ARN="$(terraform output events_target_role_arn)"
 
 # generate templates
 
 cd "${DIR}"
 
-TEMPLATES=("deploy_service.yml" "run_task.yml")
+TEMPLATES=("deploy_service.yml" "run_task.yml" "schedule_task.yml")
 
 for tmpl in "${TEMPLATES[@]}"; do
   cat "$tmpl.template" | envsubst > $tmpl

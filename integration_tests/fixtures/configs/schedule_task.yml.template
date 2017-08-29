@@ -1,0 +1,22 @@
+schedule_task:
+  - name: racco-test-schedule-job
+    cluster: 'racco-test-cluster'
+    rule:
+      name: racco-test-schedule-job-rule
+      schedule_expression: 'cron(0/5 * * * ? *)'
+    rule_targets_role_arn: '$EVENTS_TARGET_ROLE_ARN'
+    task_definition:
+      family: 'racco-test-schedule-job'
+      task_role_arn: '$TASK_ROLE_ARN'
+      network_mode: bridge
+      container_definitions:
+        - name: echo
+          image: '$ECHO_IMAGE'
+          cpu: 20
+          memory: 128
+          log_configuration:
+            log_driver: awslogs
+            options:
+              awslogs-group: '$AWSLOGS_GROUP'
+              awslogs-region: 'ap-northeast-1'
+              awslogs-stream-prefix: 'racco-schedule-job-echo'
