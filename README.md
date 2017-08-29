@@ -106,7 +106,8 @@ run_task:
 ### `schedule-task`
 
 ```
-racco schedule-task [NAME]
+racco schedule-task put [NAME]
+racco schedule-task delete [NAME]
 ```
 
 #### Setting up AWS Resources

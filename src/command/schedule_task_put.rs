@@ -11,32 +11,32 @@ use super::error::CommandError;
 use super::ecs::EcsExecuter;
 use super::cloudwatch_events::CloudWatchEventsExecuter;
 
-pub struct ScheduleTaskCommand<'c> {
+pub struct ScheduleTaskPutCommand<'c> {
   config: &'c config::command::Config,
   name: &'c str,
 }
 
-impl<'c> ScheduleTaskCommand<'c> {
+impl<'c> ScheduleTaskPutCommand<'c> {
   pub fn from_args(config: &'c config::command::Config, args: &'c clap::ArgMatches<'c>) -> Self {
-    debug!("ScheduleTaskCommand::from_args");
+    debug!("ScheduleTaskPutCommand::from_args");
 
-    ScheduleTaskCommand { 
+    ScheduleTaskPutCommand { 
       config: config,
       name: args.value_of("NAME").unwrap(),
     }
   }
 
   pub fn new(config: &'c config::command::Config, name: &'c str) -> Self {
-    debug!("ScheduleTaskCommand::new");
+    debug!("ScheduleTaskPutCommand::new");
 
-    ScheduleTaskCommand { 
+    ScheduleTaskPutCommand { 
       config: config,
       name: name,
     }
   }
 
   pub fn run(&self) -> Result<(), Box<error::Error>> {
-    debug!("ScheduleTaskCommand::run");
+    debug!("ScheduleTaskPutCommand::run");
 
     if let Some(schedule_config_group) = self.config.schedule_task.as_ref() {
       for schedule_config in schedule_config_group {
@@ -44,8 +44,8 @@ impl<'c> ScheduleTaskCommand<'c> {
           continue;
         }
 
-        let schedule_cmd = ScheduleTaskExecuter::from_config(&schedule_config);
-        try!(schedule_cmd.run());
+        let schedule_put_exec = ScheduleTaskPutExecuter::from_config(&schedule_config);
+        try!(schedule_put_exec.run());
       }
     }
 
@@ -54,21 +54,21 @@ impl<'c> ScheduleTaskCommand<'c> {
 }
 
 
-pub struct ScheduleTaskExecuter<'c>
+pub struct ScheduleTaskPutExecuter<'c>
 {
   ecs_client: EcsClient<DefaultCredentialsProvider, hyper::client::Client>,
   events_client: CloudWatchEventsClient<DefaultCredentialsProvider, hyper::client::Client>,
   config: &'c config::command::ScheduleTaskConfig
 }
 
-impl<'c> ScheduleTaskExecuter<'c> {
+impl<'c> ScheduleTaskPutExecuter<'c> {
   pub fn from_config(config: &'c config::command::ScheduleTaskConfig) -> Self {
-    debug!("ScheduleTaskExecuter::from_config");
+    debug!("ScheduleTaskPutExecuter::from_config");
 
     let ecs_client = EcsClient::new(default_tls_client().unwrap(), DefaultCredentialsProvider::new().unwrap(), Region::ApNortheast1);
     let events_client = CloudWatchEventsClient::new(default_tls_client().unwrap(), DefaultCredentialsProvider::new().unwrap(), Region::ApNortheast1);
 
-    ScheduleTaskExecuter { 
+    ScheduleTaskPutExecuter { 
       ecs_client: ecs_client,
       events_client: events_client,
       config: config
@@ -76,7 +76,7 @@ impl<'c> ScheduleTaskExecuter<'c> {
   }
 
   pub fn run(&self) -> Result<(), Box<error::Error>> {
-    debug!("ScheduleTaskExecuter::run");
+    debug!("ScheduleTaskPutExecuter::run");
 
     let maybe_ecs_cluster = try!(self.describe_cluster(&self.config.cluster));
     let ecs_cluster = try!(maybe_ecs_cluster.ok_or(Box::new(CommandError::Unknown)));
@@ -94,13 +94,13 @@ impl<'c> ScheduleTaskExecuter<'c> {
   }
 }
 
-impl<'c> EcsExecuter for ScheduleTaskExecuter<'c> {
+impl<'c> EcsExecuter for ScheduleTaskPutExecuter<'c> {
   fn ecs_client(&self) -> &EcsClient<DefaultCredentialsProvider, hyper::client::Client> {
     &self.ecs_client
   }
 }
 
-impl<'c> CloudWatchEventsExecuter for ScheduleTaskExecuter<'c> {
+impl<'c> CloudWatchEventsExecuter for ScheduleTaskPutExecuter<'c> {
   fn events_client(&self) -> &CloudWatchEventsClient<DefaultCredentialsProvider, hyper::client::Client> {
     &self.events_client
   }

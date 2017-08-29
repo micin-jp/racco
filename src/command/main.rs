@@ -3,7 +3,7 @@ use config;
 
 use clap::{Arg, App, SubCommand};
 
-use super::{DeployCommand, RunTaskCommand, ScheduleTaskCommand, ParamsGetCommand, ParamsPutCommand, ParamsDeleteCommand};
+use super::{DeployCommand, RunTaskCommand, ScheduleTaskPutCommand, ScheduleTaskDeleteCommand, ParamsGetCommand, ParamsPutCommand, ParamsDeleteCommand};
 
 pub struct MainCommand {
 }
@@ -37,10 +37,20 @@ impl MainCommand {
                     )
                     .subcommand(SubCommand::with_name("schedule-task")
                         .about("deploy ECS task scheduled by Cloudwatch events")
-                        .arg(Arg::with_name("NAME")
-                            .help("name")
-                            .required(true)
-                            .index(1))
+                        .subcommand(SubCommand::with_name("put")
+                            .about("put scheduled task")
+                            .arg(Arg::with_name("NAME")
+                                .help("name")
+                                .required(true)
+                                .index(1))
+                        )
+                        .subcommand(SubCommand::with_name("delete")
+                            .about("delete scheduled task")
+                            .arg(Arg::with_name("NAME")
+                                .help("name")
+                                .required(true)
+                                .index(1))
+                        )
                     )
                     .subcommand(SubCommand::with_name("params")
                         .about("manages parameters")
@@ -118,21 +128,36 @@ impl MainCommand {
                 info!("end run-task");
             }
 
-            // schedule
-            if let Some(sub_matches) = matches.subcommand_matches("schedule-task") {
+            // schedule-task
+            if let Some(sub0_matches) = matches.subcommand_matches("schedule-task") {
+                if let Some(sub1_matches) = sub0_matches.subcommand_matches("put") {
+                    info!("start schedule-task put");
 
-                info!("start schedule-task");
-
-                let cmd = ScheduleTaskCommand::from_args(&config, sub_matches);
-                match cmd.run() {
-                    Ok(_) => {
-                    },
-                    Err(error) => {
-                        error!("schedule-task failed: {}", error)
+                    let cmd = ScheduleTaskPutCommand::from_args(&config, sub1_matches);
+                    match cmd.run() {
+                        Ok(_) => {
+                        },
+                        Err(error) => {
+                            error!("schedule-task put failed: {}", error)
+                        }
                     }
-                }
 
-                info!("end schdule-task");
+                    info!("end schdule-task put");
+                }
+                if let Some(sub1_matches) = sub0_matches.subcommand_matches("delete") {
+                    info!("start schedule-task delete");
+
+                    let cmd = ScheduleTaskDeleteCommand::from_args(&config, sub1_matches);
+                    match cmd.run() {
+                        Ok(_) => {
+                        },
+                        Err(error) => {
+                            error!("schedule-task delete failed: {}", error)
+                        }
+                    }
+
+                    info!("end schedule-task delete");
+                }
             }
 
             // params
