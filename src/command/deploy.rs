@@ -99,7 +99,7 @@ impl<'c> DeployExecuter<'c> {
 
     let maybe_service = try!(self.describe_service(cluster, &service_conf));
 
-    let service: rusoto_ecs::Service = match maybe_service {
+    let _service: rusoto_ecs::Service = match maybe_service {
       Some(s) => s,
       None => try!(self.create_service(cluster, &service_conf, &task_definition_arn))
     };

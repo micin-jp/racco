@@ -10,6 +10,7 @@ use config;
 use super::ecs::EcsExecuter;
 use super::cloudwatch_events::CloudWatchEventsExecuter;
 
+#[allow(dead_code)]
 pub struct ScheduleTaskDeleteCommand<'c> {
   config: &'c config::command::Config,
   name: &'c str,
