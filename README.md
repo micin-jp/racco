@@ -7,9 +7,21 @@ AWS ECS Deployment toolbox.
 
 ## Install
 
+### macOS
+
 ```
 brew tap micin-jp/racco
 brew install racco
+```
+
+### Linux
+
+From the [release page](https://github.com/micin-jp/racco/releases), download ZIP file. Unarchive it, and put the binary to somewhere you want.
+
+Or, you can install by running the install script like below (the binary is put under `/usr/local/bin`):
+
+```
+curl -sL https://raw.githubusercontent.com/micin-jp/racco/master/install.sh | sudo sh
 ```
 
 ## Commands
