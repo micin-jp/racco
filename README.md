@@ -163,6 +163,7 @@ schedule_task:
 racco params get [NAMES]
 racco params put [NAME] [VALUE]
 racco params delete [NAME]
+racco params exec [PROGRAM] [ARGS]
 ```
 
 #### Setting up AWS Resources
