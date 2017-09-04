@@ -10,29 +10,27 @@ use super::params::ParamsExecuter;
 
 pub struct ParamsGetCommand<'c> {
   config: &'c config::command::Config,
-  names: Vec<&'c str>,
+  name: &'c str,
 }
 
 impl<'c> ParamsGetCommand<'c> {
   pub fn from_args(config: &'c config::command::Config, args: &'c clap::ArgMatches<'c>) -> Self {
     debug!("ParamsGetCommand::from_args");
 
-    let names = args.value_of("NAMES").unwrap()
-        .split(",")
-        .collect::<Vec<&str>>();
+    let name = args.value_of("NAME").unwrap();
 
     ParamsGetCommand { 
       config: config,
-      names: names,
+      name: name,
     }
   }
 
-  pub fn new(config: &'c config::command::Config, names: &'c Vec<&'c str>) -> Self {
+  pub fn new(config: &'c config::command::Config, name: &'c str) -> Self {
     debug!("ParamsGetCommand::new");
 
     ParamsGetCommand { 
       config: config,
-      names: names.to_owned(),
+      name: name,
     }
   }
 
@@ -41,7 +39,7 @@ impl<'c> ParamsGetCommand<'c> {
     if let Some(params_config) = self.config.params.as_ref() {
 
       let exec = ParamsGetExecuter::from_config(params_config);
-      try!(exec.run(&self.names));
+      try!(exec.run(&self.name));
     }
     Ok(())
   }
@@ -61,37 +59,32 @@ impl<'c> ParamsGetExecuter<'c> {
     }
   }
 
-  pub fn run(&self, names: &Vec<&str>) -> Result<(), Box<error::Error>> {
+  pub fn run(&self, name: &str) -> Result<(), Box<error::Error>> {
     debug!("ParamsGetExecuter::run");
 
-    let names_with_path = names.iter().map(|n| self.name_with_path(n)).collect();
-
+    let name_with_path = self.name_with_path(name);
     let with_decription = self.config.secure.is_some();
 
-    let req = rusoto_ssm::GetParametersRequest {
-      names: names_with_path,
+    let req = rusoto_ssm::GetParameterRequest {
+      name: name_with_path,
       with_decryption: Some(with_decription),
       ..Default::default()
     };
 
     let client = self.client();
-    let res = try!(client.get_parameters(&req));
-    info!("get parameters successfully: {}", names.join(""));
+    let res = try!(client.get_parameter(&req));
+    info!("get parameters successfully: {}", name);
 
-    if let Some(params) = res.parameters {
+    if let Some(params) = res.parameter {
       self.print(&params);
     }
 
     Ok(())
   }
 
-  fn print(&self, params: &Vec<rusoto_ssm::Parameter>) {
-    for param in params.iter() {
-      if let (Some(name_with_path), Some(value)) = (param.name.as_ref(), param.value.as_ref()) {
-        if let Ok(name) = self.strip_path(name_with_path) {
-          println!("{}={} ", name, value);
-        }
-      }
+  fn print(&self, param: &rusoto_ssm::Parameter) {
+    if let Some(val) = param.value.as_ref() {
+      println!("{}", val);
     }
   }
 

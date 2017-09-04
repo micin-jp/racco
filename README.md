@@ -160,7 +160,7 @@ schedule_task:
 ### `params`
 
 ```
-racco params get [NAMES]
+racco params get [NAME]
 racco params put [NAME] [VALUE]
 racco params delete [NAME]
 racco params exec [PROGRAM] [ARGS]
