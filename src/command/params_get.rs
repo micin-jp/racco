@@ -6,7 +6,6 @@ use rusoto_ssm;
 use rusoto_ssm::Ssm;
 use config;
 
-use super::error::CommandError;
 use super::params::ParamsExecuter;
 
 pub struct ParamsGetCommand<'c> {
@@ -46,7 +45,6 @@ impl<'c> ParamsGetCommand<'c> {
     }
     Ok(())
   }
-
 }
 
 pub struct ParamsGetExecuter<'c> {
@@ -94,15 +92,6 @@ impl<'c> ParamsGetExecuter<'c> {
           println!("{}={} ", name, value);
         }
       }
-    }
-  }
-
-  fn strip_path<'a>(&self, name: &'a str) -> Result<&'a str, Box<error::Error>> {
-    let path = self.path();
-    if name.starts_with(&path) {
-      return Ok(name.trim_left_matches(&path))
-    } else {
-      Err(Box::new(CommandError::Unknown))
     }
   }
 

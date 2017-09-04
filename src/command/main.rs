@@ -1,9 +1,9 @@
 use std::error;
 use config;
 
-use clap::{Arg, App, SubCommand};
+use clap::{Arg, App, SubCommand, AppSettings};
 
-use super::{DeployCommand, RunTaskCommand, ScheduleTaskPutCommand, ScheduleTaskDeleteCommand, ParamsGetCommand, ParamsPutCommand, ParamsDeleteCommand};
+use super::{DeployCommand, RunTaskCommand, ScheduleTaskPutCommand, ScheduleTaskDeleteCommand, ParamsExecCommand, ParamsGetCommand, ParamsPutCommand, ParamsDeleteCommand};
 
 pub struct MainCommand {
 }
@@ -78,6 +78,19 @@ impl MainCommand {
                                .help("Parameter name")
                                .required(true)
                                .index(1))
+                        )
+                        .subcommand(SubCommand::with_name("exec")
+                            .setting(AppSettings::AllowLeadingHyphen)
+                            .about("executes a command with exported parameters as env variables")
+                            .arg(Arg::with_name("PROGRAM")
+                                .help("Program")
+                                .required(true)
+                                .index(1))
+                            .arg(Arg::with_name("ARGS")
+                                .help("Arguments")
+                                .multiple(true)
+                                .index(2)
+                                )
                         )
                     )
                     .get_matches()
@@ -203,6 +216,20 @@ impl MainCommand {
                     }
 
                     info!("end params delete");
+                }
+                if let Some(sub1_matches) = sub0_matches.subcommand_matches("exec") {
+                    info!("start params exec");
+
+                    let cmd = ParamsExecCommand::from_args(&config, sub1_matches);
+                    match cmd.run() {
+                        Ok(_) => {
+                        },
+                        Err(error) => {
+                            error!("params exec failed: {}", error)
+                        }
+                    }
+
+                    info!("end params exec");
                 }
             }
 

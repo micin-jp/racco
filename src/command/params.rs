@@ -1,7 +1,10 @@
+use std::error;
 use hyper;
 use rusoto_core::{default_tls_client, DefaultCredentialsProvider, Region};
 use rusoto_ssm::SsmClient;
 use config;
+
+use super::error::CommandError;
 
 pub trait ParamsExecuter {
 
@@ -28,5 +31,15 @@ pub trait ParamsExecuter {
     }
     path
   }
+
+  fn strip_path<'a>(&self, name: &'a str) -> Result<&'a str, Box<error::Error>> {
+    let path = self.path();
+    if name.starts_with(&path) {
+      return Ok(name.trim_left_matches(&path))
+    } else {
+      Err(Box::new(CommandError::Unknown))
+    }
+  }
+
 
 }
