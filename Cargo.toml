@@ -6,15 +6,15 @@ license = "MIT"
 repository = "https://github.com/micin-jp/racco"
 
 [dependencies]
-clap = "2.24.2"
+clap = "2.26.0"
 log = "0.3"
 env_logger = "0.3"
 hyper = "0.10.0"
-rusoto_core = {version = "0.26.0"}
-rusoto_credential = {version = "0.7.0"}
-rusoto_ecs = {version = "0.26.0"}
-rusoto_ssm = {version = "0.26.0"}
-rusoto_events = {version = "0.26.0"}
+rusoto_core = {version = "0.28.0"}
+rusoto_credential = {version = "0.8.0"}
+rusoto_ecs = {version = "0.28.0"}
+rusoto_ssm = {version = "0.28.0"}
+rusoto_events = {version = "0.28.0"}
 serde = "1.0"
 serde_derive = "1.0.8"
 serde_yaml = "0.7.1"

@@ -87,7 +87,7 @@ impl<'c> ParamsGetExecuter<'c> {
     Ok(())
   }
 
-  fn print(&self, params: &rusoto_ssm::ParameterList) {
+  fn print(&self, params: &Vec<rusoto_ssm::Parameter>) {
     for param in params.iter() {
       if let (Some(name_with_path), Some(value)) = (param.name.as_ref(), param.value.as_ref()) {
         if let Ok(name) = self.strip_path(name_with_path) {
