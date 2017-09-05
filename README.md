@@ -3,7 +3,7 @@
 
 [![Build Status](https://travis-ci.org/micin-jp/racco.svg?branch=master)](https://travis-ci.org/micin-jp/racco)
 
-AWS ECS Deployment toolbox.
+A deployment toolkit for AWS ECS. Racco runs deployment process by a configuration file user defined.
 
 ## Install
 
@@ -18,21 +18,34 @@ brew install racco
 
 From the [release page](https://github.com/micin-jp/racco/releases), download ZIP file. Unarchive it, and put the binary to somewhere you want.
 
-Or, you can install by running the install script like below (the binary is put under `/usr/local/bin`):
+Or, executing install script, you can install like below:
 
 ```
 curl -sL https://raw.githubusercontent.com/micin-jp/racco/master/install.sh | sudo sh
 ```
 
-## Commands
+The binary will be put under `/usr/local/bin`.
 
-### `deploy`
+## Usage
 
-```racco deploy [NAME]```
+Racco has 4 sub commands `deploy`, `run-task`, `schedule-task` and `params`. To execute the commands, a configuration file named `racco.yml` is needed.
 
-#### Setting up AWS Resources
+While Racco deploys applications to ECS by manipulating AWS resources, some resources are required to be provisioned beforehand.
+For example, to execute `deploy`, an ECS cluster required to be created. Specifying the cluster name, you can deploy ECS services on it. Creating and updating services are executed by Racco self.
 
-AWS resources below are required to be provisioned before deployment:
+See AWS documents for details of [ECS](http://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html).
+
+### Deploy
+
+```
+racco deploy [NAME]
+```
+
+This command updates ECS services. The section of `deploy` in the configuration file, has a service definition and a task definition to be run on the service.
+
+Executing the command, a new task definition will be created, and update the service with its task definition. If there is no service, a new service will be created.
+
+#### Required AWS Resources
 
 - ECS cluster
 - ELB (optional)
@@ -41,8 +54,6 @@ AWS resources below are required to be provisioned before deployment:
 - ECR repository for docker image (optional)
 
 #### Example Configuration
-
-Edit your `racco.yml`.
 
 ```yml:racco.yml
 deploy:
@@ -78,21 +89,21 @@ deploy:
                 awslogs-stream-prefix: 'racco-web-nginx'
 ```
 
-### `run-task`
+### Run task
 
-```racco run-task [NAME]```
+```
+racco run-task [NAME]
+```
 
-#### Setting up AWS Resources
+This command executes a given task.
 
-AWS resources below are required to be provisioned before running task:
+#### Required AWS Resources
 
 - ECS cluster
 - IAM role for ECS Task
 - ECR repository for docker image (optional)
 
 #### Example Configuration
-
-Edit your `racco.yml`.
 
 ```yml:racco.yml
 run_task:
@@ -115,16 +126,17 @@ run_task:
               awslogs-stream-prefix: 'racco-job-echo'
 ```
 
-### `schedule-task`
+### Schedule task
+
+This command sets scheduled tasks.
+
+It creates a rule invoked at certain times in CloudWatch events. A task definition is triggered as a target of the rule.
 
 ```
-racco schedule-task put [NAME]
-racco schedule-task delete [NAME]
+racco schedule-task [NAME]
 ```
 
-#### Setting up AWS Resources
-
-AWS resources below are required to be provisioned:
+#### Required AWS Resources
 
 - ECS cluster
 - IAM role for ECS Task
@@ -132,8 +144,6 @@ AWS resources below are required to be provisioned:
 - IAM role to run ECS Task from CloudWatch Events
 
 #### Example Configuration
-
-Edit your `racco.yml`.
 
 ```yml:racco.yml
 schedule_task:
@@ -155,9 +165,7 @@ schedule_task:
 ```
 
 
-
-
-### `params`
+### Params
 
 ```
 racco params get [NAME]
@@ -166,15 +174,18 @@ racco params delete [NAME]
 racco params exec [PROGRAM] [ARGS]
 ```
 
-#### Setting up AWS Resources
+`params` command manages parameters used at container runtime. Parameters are stored SSM Parameter Store. Using KMS, you can manage secrets.
 
-AWS resources below are required to be provisioned:
+Developers execute `params put`, and store parameters.
+
+Using `params get` or `params exec`, you can get the stored parameters.
+`params exec` expands the parameters in environment variables, and execute a given command.
+
+#### Required AWS Resources
 
 - KMS key (optional, if you use SecuredString)
 
 #### Example Configuration
-
-Edit your `racco.yml`.
 
 ```yml:racco.yml
 params:
@@ -182,7 +193,6 @@ params:
   secure:
     key: 'XXXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'
 ```
-
 
 
 ## Related projects
