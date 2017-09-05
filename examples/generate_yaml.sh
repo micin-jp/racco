@@ -9,7 +9,7 @@ cd ${DIR}
 # export variables
 
 
-cd "${DIR}/aws/terraform"
+cd "${DIR}/terraform"
 
 export SERVICE_ROLE_ARN="$(terraform output cluster_service_role_arn)"
 export LB_TARGET_GROUP_ARN="$(terraform output alb_target_group_arn)"
