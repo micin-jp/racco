@@ -4,7 +4,9 @@ use clap;
 use hyper;
 use rusoto_core::{default_tls_client, DefaultCredentialsProvider, Region};
 use rusoto_ecs::{ EcsClient };
+
 use config;
+use output;
 
 use super::error::CommandError;
 use super::ecs::EcsExecuter;
@@ -71,12 +73,16 @@ impl<'c> RunTaskExecuter<'c> {
   }
 
   pub fn run(&self) -> Result<(), Box<error::Error>> {
+    debug!("RunTaskExecuter::run");
 
+    output::PrintLine::info("Registering a task definition");
     let task_definition = try!(self.register_task_definition(&self.config.task_definition));
     let task_definition_arn = try!(task_definition.task_definition_arn.as_ref().ok_or(Box::new(CommandError::Unknown)));
 
+    output::PrintLine::info("Starting to run the task");
     try!(self.run_task(&self.config.cluster, &task_definition_arn));
 
+    output::PrintLine::success("Finished running the task");
     Ok(())
   }
 }

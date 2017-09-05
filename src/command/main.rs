@@ -1,7 +1,8 @@
 use std::error;
-use config;
-
 use clap::{Arg, App, SubCommand, AppSettings};
+
+use config;
+use output;
 
 use super::{DeployCommand, RunTaskCommand, ScheduleTaskPutCommand, ScheduleTaskDeleteCommand, ParamsExecCommand, ParamsGetCommand, ParamsPutCommand, ParamsDeleteCommand};
 
@@ -134,7 +135,7 @@ impl MainCommand {
                     Ok(_) => {
                     },
                     Err(error) => {
-                        error!("run-task failed: {}", error)
+                        output::PrintLine::error(&format!("Failed: {}", error));
                     }
                 }
 
@@ -151,7 +152,7 @@ impl MainCommand {
                         Ok(_) => {
                         },
                         Err(error) => {
-                            error!("schedule-task put failed: {}", error)
+                            output::PrintLine::error(&format!("Failed: {}", error));
                         }
                     }
 
@@ -165,7 +166,7 @@ impl MainCommand {
                         Ok(_) => {
                         },
                         Err(error) => {
-                            error!("schedule-task delete failed: {}", error)
+                            output::PrintLine::error(&format!("Failed: {}", error));
                         }
                     }
 
@@ -183,7 +184,7 @@ impl MainCommand {
                         Ok(_) => {
                         },
                         Err(error) => {
-                            error!("params get failed: {}", error)
+                            output::PrintLine::error(&format!("Failed: {}", error));
                         }
                     }
 
@@ -197,7 +198,7 @@ impl MainCommand {
                         Ok(_) => {
                         },
                         Err(error) => {
-                            error!("params put failed: {}", error)
+                            output::PrintLine::error(&format!("Failed: {}", error));
                         }
                     }
 
@@ -211,7 +212,7 @@ impl MainCommand {
                         Ok(_) => {
                         },
                         Err(error) => {
-                            error!("params delete failed: {}", error)
+                            output::PrintLine::error(&format!("Failed: {}", error));
                         }
                     }
 
@@ -225,7 +226,7 @@ impl MainCommand {
                         Ok(_) => {
                         },
                         Err(error) => {
-                            error!("params exec failed: {}", error)
+                            output::PrintLine::error(&format!("Failed: {}", error));
                         }
                     }
 

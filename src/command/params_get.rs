@@ -4,7 +4,9 @@ use std::default::Default;
 use clap;
 use rusoto_ssm;
 use rusoto_ssm::Ssm;
+
 use config;
+use output;
 
 use super::params::ParamsExecuter;
 
@@ -73,7 +75,6 @@ impl<'c> ParamsGetExecuter<'c> {
 
     let client = self.client();
     let res = try!(client.get_parameter(&req));
-    info!("get parameters successfully: {}", name);
 
     if let Some(params) = res.parameter {
       self.print(&params);
@@ -84,7 +85,7 @@ impl<'c> ParamsGetExecuter<'c> {
 
   fn print(&self, param: &rusoto_ssm::Parameter) {
     if let Some(val) = param.value.as_ref() {
-      println!("{}", val);
+      output::PrintLine::print(val);
     }
   }
 

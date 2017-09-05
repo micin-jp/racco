@@ -4,7 +4,9 @@ use std::default::Default;
 use clap;
 use rusoto_ssm;
 use rusoto_ssm::Ssm;
+
 use config;
+use output;
 
 use super::params::ParamsExecuter;
 
@@ -67,8 +69,8 @@ impl<'c> ParamsDeleteExecuter<'c> {
 
     let client = self.client();
     try!(client.delete_parameter(&req));
-    info!("delete parameter successfully: {}", name);
 
+    output::PrintLine::success("Finished deleting the parameter");
     Ok(())
   }
 }

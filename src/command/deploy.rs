@@ -7,7 +7,9 @@ use hyper;
 use rusoto_core::{default_tls_client, DefaultCredentialsProvider, Region};
 use rusoto_ecs;
 use rusoto_ecs::{ EcsClient };
+
 use config;
+use output;
 
 use super::error::CommandError;
 use super::ecs::EcsExecuter;
@@ -87,12 +89,14 @@ impl<'c> DeployExecuter<'c> {
     let task_definition = 
       if let Some(latest_task_definition) = maybe_latest_task_definition {
         if self.detect_task_definition_changes(&service_conf.task_definition, &latest_task_definition) {
+          output::PrintLine::info("Registering a task definition");
           try!(self.register_task_definition(&service_conf.task_definition))
         } else {
           latest_task_definition
         }
       } else {
-         try!(self.register_task_definition(&service_conf.task_definition))
+        output::PrintLine::info("Registering a task definition");
+        try!(self.register_task_definition(&service_conf.task_definition))
       };
     
     let task_definition_arn = try!(task_definition.task_definition_arn.as_ref().ok_or(Box::new(CommandError::Unknown)));
@@ -101,13 +105,19 @@ impl<'c> DeployExecuter<'c> {
 
     let _service: rusoto_ecs::Service = match maybe_service {
       Some(s) => s,
-      None => try!(self.create_service(cluster, &service_conf, &task_definition_arn))
+      None => {
+        output::PrintLine::info("Service has not been exist. Creating...");
+        try!(self.create_service(cluster, &service_conf, &task_definition_arn))
+      }
     };
     
+    output::PrintLine::info("Starting to update the service");
     try!(self.update_service(cluster, &service_conf, &task_definition));
+    output::PrintLine::info("Finished updating the service");
 
     try!(self.wait_for_green(&service_conf));
 
+    output::PrintLine::success("Deployment completed");
     Ok(())
   }
 
@@ -128,10 +138,10 @@ impl<'c> DeployExecuter<'c> {
       if let Some(primary) = maybe_primary {
         if let (Some(desired_count), Some(running_count)) = (primary.desired_count, primary.running_count) {
           if desired_count == running_count {
-            info!("New tasks now running. (desired_count:{}, running_count:{}", desired_count, running_count);
+            output::PrintLine::info(&format!("New tasks are now running. (desired_count:{}, running_count:{}", desired_count, running_count));
             break;
           } else {
-            info!("Wait for new tasks running... (desired_count:{}, running_count:{}", desired_count, running_count);
+            output::PrintLine::info(&format!("Waiting for new tasks to run... (desired_count:{}, running_count:{}", desired_count, running_count));
           }
         }
       }

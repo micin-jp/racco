@@ -5,7 +5,9 @@ use hyper;
 use rusoto_core::{default_tls_client, DefaultCredentialsProvider, Region};
 use rusoto_ecs::{ EcsClient };
 use rusoto_events::{ CloudWatchEventsClient };
+
 use config;
+use output;
 
 use super::ecs::EcsExecuter;
 use super::cloudwatch_events::CloudWatchEventsExecuter;
@@ -70,6 +72,7 @@ impl ScheduleTaskDeleteExecuter {
 
     try!(self.delete_rule(rule_name));
 
+    output::PrintLine::success("Finished deleting the scheduled task");
     Ok(())
   }
 }

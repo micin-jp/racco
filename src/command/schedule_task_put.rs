@@ -5,7 +5,9 @@ use hyper;
 use rusoto_core::{default_tls_client, DefaultCredentialsProvider, Region};
 use rusoto_ecs::{ EcsClient };
 use rusoto_events::{ CloudWatchEventsClient };
+
 use config;
+use output;
 
 use super::error::CommandError;
 use super::ecs::EcsExecuter;
@@ -90,6 +92,7 @@ impl<'c> ScheduleTaskPutExecuter<'c> {
     try!(self.put_rule(&self.config.rule));
     try!(self.put_ecs_task_target(&self.config.rule, role_arn, ecs_cluster_arn, task_definition_arn));
 
+    output::PrintLine::success("Finished putting the scheduled task");
     Ok(())
   }
 }
