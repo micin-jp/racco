@@ -17,6 +17,7 @@ extern crate rusoto_ssm;
 extern crate rusoto_events;
 
 extern crate termion;
+extern crate tabwriter;
 
 pub mod command;
 pub mod config;

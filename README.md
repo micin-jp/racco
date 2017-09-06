@@ -169,6 +169,7 @@ schedule_task:
 
 ```
 racco params get [NAME]
+racco params list
 racco params put [NAME] [VALUE]
 racco params delete [NAME]
 racco params exec [PROGRAM] [ARGS]

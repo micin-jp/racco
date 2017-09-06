@@ -1,7 +1,8 @@
 use std::error;
 use hyper;
 use rusoto_core::{default_tls_client, DefaultCredentialsProvider, Region};
-use rusoto_ssm::SsmClient;
+use rusoto_ssm;
+use rusoto_ssm::{Ssm, SsmClient};
 use config;
 
 use super::error::CommandError;
@@ -39,6 +40,23 @@ pub trait ParamsExecuter {
     } else {
       Err(Box::new(CommandError::Unknown))
     }
+  }
+
+  fn params(&self) -> Result<Option<Vec<rusoto_ssm::Parameter>>, Box<error::Error>> {
+    let path = self.path();
+    let with_decription = self.config().secure.is_some();
+
+    let req = rusoto_ssm::GetParametersByPathRequest {
+      path: path,
+      with_decryption: Some(with_decription),
+      ..Default::default()
+    };
+
+    let client = self.client();
+    let res = try!(client.get_parameters_by_path(&req));
+    info!("get parameters-by-path successfully");
+
+    Ok(res.parameters)
   }
 
 

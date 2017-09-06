@@ -4,7 +4,7 @@ use clap::{Arg, App, SubCommand, AppSettings};
 use config;
 use output;
 
-use super::{DeployCommand, RunTaskCommand, ScheduleTaskPutCommand, ScheduleTaskDeleteCommand, ParamsExecCommand, ParamsGetCommand, ParamsPutCommand, ParamsDeleteCommand};
+use super::{DeployCommand, RunTaskCommand, ScheduleTaskPutCommand, ScheduleTaskDeleteCommand, ParamsExecCommand, ParamsGetCommand, ParamsListCommand, ParamsPutCommand, ParamsDeleteCommand};
 
 pub struct MainCommand {
 }
@@ -61,6 +61,9 @@ impl MainCommand {
                                .help("Name of the parameter")
                                .required(true)
                                .index(1))
+                        )
+                        .subcommand(SubCommand::with_name("list")
+                            .about("Lists parameters")
                         )
                         .subcommand(SubCommand::with_name("put")
                             .about("Puts a parameter")
@@ -189,6 +192,20 @@ impl MainCommand {
                     }
 
                     info!("end params get");
+                }
+                if let Some(sub1_matches) = sub0_matches.subcommand_matches("list") {
+                    info!("start params list");
+
+                    let cmd = ParamsListCommand::from_args(&config, sub1_matches);
+                    match cmd.run() {
+                        Ok(_) => {
+                        },
+                        Err(error) => {
+                            output::PrintLine::error(&format!("Failed: {}", error));
+                        }
+                    }
+
+                    info!("end params list");
                 }
                 if let Some(sub1_matches) = sub0_matches.subcommand_matches("put") {
                     info!("start params put");

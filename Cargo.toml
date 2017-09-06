@@ -19,4 +19,5 @@ rusoto_events = {version = "0.28.0"}
 serde = "1.0"
 serde_derive = "1.0.8"
 serde_yaml = "0.7.1"
+tabwriter = "1"
 
