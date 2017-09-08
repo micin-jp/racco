@@ -17,7 +17,7 @@ impl MainCommand {
                     .version("0.1.0")
                     .author("Daichi Sakai. <daisaru11@gmail.com>")
                     .about("Deployment toolkit for AWS ECS")
-                    .arg(Arg::with_name("config")
+                    .arg(Arg::with_name("CONFIG")
                             .short("c")
                             .long("config")
                             .value_name("FILE")
@@ -102,7 +102,7 @@ impl MainCommand {
 
     info!("start racco");
 
-    let arg_conf = matches.value_of("config").unwrap_or("racco.yml");
+    let arg_conf = matches.value_of("CONFIG").unwrap_or("racco.yml");
     info!("config file: {}", arg_conf);
 
     match config::command::Config::from_file(arg_conf) {
