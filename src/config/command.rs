@@ -60,6 +60,7 @@ impl Config {
         if let Some(tmpl_vars) = template_variables {
             let handlebars = Handlebars::new();
             contents = try!(handlebars.template_render(&contents, tmpl_vars));
+            debug!("Config::from_file - Render template");
         }
 
         debug!("Config::from_file - Yaml file: {}", contents);

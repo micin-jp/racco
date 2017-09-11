@@ -12,7 +12,7 @@ use super::{DeployCommand, ParamsDeleteCommand, ParamsExecCommand, ParamsGetComm
 pub struct MainCommand {}
 
 impl MainCommand {
-    pub fn validate_args_template_variables(tag_str: String) -> Result<(), String> {
+    fn validate_args_template_variables(tag_str: String) -> Result<(), String> {
         let pair: Vec<&str> = tag_str.split("=").collect();
         if pair.len() == 2 {
             Ok(())
