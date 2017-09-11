@@ -1,8 +1,10 @@
+use std::collections::BTreeMap;
 use std::fs::File;
 use std::error;
 use std::fmt;
 use std::io::prelude::*;
 
+use handlebars::Handlebars;
 use serde_yaml;
 
 use super::ecs;
@@ -44,13 +46,22 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn from_file(file_name: &str) -> Result<Config, Box<error::Error>> {
+    pub fn from_file(
+        file_name: &str,
+        template_variables: Option<&BTreeMap<String, String>>,
+    ) -> Result<Config, Box<error::Error>> {
         debug!("Config::from_file");
 
         let mut file = try!(File::open(file_name));
         let mut contents = String::new();
 
         try!(file.read_to_string(&mut contents));
+
+        if let Some(tmpl_vars) = template_variables {
+            let handlebars = Handlebars::new();
+            contents = try!(handlebars.template_render(&contents, tmpl_vars));
+            debug!("Config::from_file - Render template");
+        }
 
         debug!("Config::from_file - Yaml file: {}", contents);
 

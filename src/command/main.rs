@@ -1,5 +1,6 @@
+use std::collections::BTreeMap;
 use std::error;
-use clap::{App, AppSettings, Arg, SubCommand};
+use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 
 use config;
 use output;
@@ -11,6 +12,28 @@ use super::{DeployCommand, ParamsDeleteCommand, ParamsExecCommand, ParamsGetComm
 pub struct MainCommand {}
 
 impl MainCommand {
+    fn validate_args_template_variables(tag_str: String) -> Result<(), String> {
+        let pair: Vec<&str> = tag_str.split("=").collect();
+        if pair.len() == 2 {
+            Ok(())
+        } else {
+            Err(String::from(
+                "The variable format should contain variable name and variable value, and those are seperated with `=` character",
+            ))
+        }
+    }
+    fn parse_args_template_variables(args: &ArgMatches) -> Option<BTreeMap<String, String>> {
+        args.values_of("CONFIG_TEMPLATE_VARIABLES").map(|vars_str| {
+            let mut data = BTreeMap::new();
+            for var_str in vars_str {
+                let pair: Vec<&str> = var_str.split("=").collect();
+                data.insert(pair[0].to_owned(), pair[1].to_owned());
+            }
+
+            data
+        })
+    }
+
     pub fn run() -> Result<(), Box<error::Error>> {
 
         let matches = App::new("Racco")
@@ -24,6 +47,16 @@ impl MainCommand {
                     .value_name("FILE")
                     .help("Specifies configuration file")
                     .takes_value(true),
+            )
+            .arg(
+                Arg::with_name("CONFIG_TEMPLATE_VARIABLES")
+                    .short("a")
+                    .long("config-template-vars")
+                    .value_name("NAME=VALUE")
+                    .help("Variables to be rendered in config template.")
+                    .takes_value(true)
+                    .multiple(true)
+                    .validator(MainCommand::validate_args_template_variables),
             )
             .subcommand(
                 SubCommand::with_name("deploy")
@@ -130,10 +163,12 @@ impl MainCommand {
 
         info!("start racco");
 
-        let arg_conf = matches.value_of("CONFIG").unwrap_or("racco.yml");
-        info!("config file: {}", arg_conf);
+        let config_file = matches.value_of("CONFIG").unwrap_or("racco.yml");
+        info!("config file: {}", config_file);
 
-        match config::command::Config::from_file(arg_conf) {
+        let template_variables = MainCommand::parse_args_template_variables(&matches);
+
+        match config::command::Config::from_file(config_file, template_variables.as_ref()) {
             Err(error) => error!("invalid config: {}", error),
             Ok(config) => {
 
@@ -265,7 +300,6 @@ impl MainCommand {
                         info!("end params exec");
                     }
                 }
-
             }
         };
 
