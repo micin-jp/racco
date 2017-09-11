@@ -195,6 +195,24 @@ params:
     key: 'XXXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'
 ```
 
+### Templating config file
+
+In configuration files, you can use [Handlebars](https://github.com/sunng87/handlebars-rust) template.
+
+```
+run_task:
+  - name: racco-job
+    cluster: racco-cluster-{{ cluster_env }}
+    task_definition:
+      family: racco-job
+      container_definitions:
+        - name: job
+          image: 'XXXXXXXXXXX.dkr.ecr.ap-northeast-1.amazonaws.com/racco/job:{{ image_tag }}'
+```
+
+```
+racco --config-template-vars cluster_env=production image_tag=v1.0.0 run-task racco-job
+```
 
 ## Related projects
 
