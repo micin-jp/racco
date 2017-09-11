@@ -11,6 +11,7 @@ env_logger = "0.3"
 hyper = "0.10.0"
 termion = "1.5.1"
 log = "0.3"
+handlebars = "0.29.1"
 rusoto_core = {version = "0.28.0"}
 rusoto_credential = {version = "0.8.0"}
 rusoto_ecs = {version = "0.28.0"}
