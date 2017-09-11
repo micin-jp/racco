@@ -17,7 +17,7 @@ pub struct ParamsListCommand<'c> {
 }
 
 impl<'c> ParamsListCommand<'c> {
-    pub fn from_args(config: &'c config::command::Config, args: &'c clap::ArgMatches<'c>) -> Self {
+    pub fn from_args(config: &'c config::command::Config, _args: &'c clap::ArgMatches<'c>) -> Self {
         debug!("ParamsListCommand::from_args");
 
         ParamsListCommand { config: config }
