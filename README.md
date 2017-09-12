@@ -16,15 +16,14 @@ brew install racco
 
 ### Linux
 
-From the [release page](https://github.com/micin-jp/racco/releases), download ZIP file. Unarchive it, and put the binary to somewhere you want.
+From the [release page](https://github.com/micin-jp/racco/releases), download the TAR archive. Unarchive it, and put the binary to somewhere you want.
 
 Or, executing install script, you can install like below:
 
 ```
-curl -sL https://raw.githubusercontent.com/micin-jp/racco/master/install.sh | sudo sh
+curl -sL https://raw.githubusercontent.com/micin-jp/racco/master/install.sh \
+  | sudo sh -s -- --target x86_64-unknown-linux-musl --to /usr/local/bin
 ```
-
-The binary will be put under `/usr/local/bin`.
 
 ## Usage
 
