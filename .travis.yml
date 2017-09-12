@@ -1,28 +1,89 @@
-language: rust
+# Based on the "trust" template v0.1.1
+# https://github.com/japaric/trust/tree/v0.1.1
+
 dist: trusty
+language: rust
+services: docker
+sudo: required
+
+env:
+  global:
+    - CRATE_NAME=racco
+
 matrix:
   include:
-    - os: osx
-      rust: stable
-      env: TARGET=x86_64-apple-darwin
-    - os: linux
-      rust: stable
-      env: TARGET=x86_64-unknown-linux-gnu
+    # Linux
+    #- env: TARGET=i686-unknown-linux-gnu
+    #- env: TARGET=i686-unknown-linux-musl
+    - env: TARGET=x86_64-unknown-linux-gnu
+    - env: TARGET=x86_64-unknown-linux-musl
+
+    # OSX
+    #- env: TARGET=i686-apple-darwin
+    #  os: osx
+    - env: TARGET=x86_64-apple-darwin
+      os: osx
+
+    # *BSD
+    #- env: TARGET=i686-unknown-freebsd DISABLE_TESTS=1
+    #- env: TARGET=x86_64-unknown-freebsd DISABLE_TESTS=1
+    #- env: TARGET=x86_64-unknown-netbsd DISABLE_TESTS=1
+
+    # Other architectures
+    #- env: TARGET=aarch64-unknown-linux-gnu
+    #- env: TARGET=armv7-unknown-linux-gnueabihf
+    #- env: TARGET=mips-unknown-linux-gnu
+    #- env: TARGET=mips64-unknown-linux-gnuabi64
+    #- env: TARGET=mips64el-unknown-linux-gnuabi64
+    #- env: TARGET=mipsel-unknown-linux-gnu
+    #- env: TARGET=powerpc-unknown-linux-gnu
+    #- env: TARGET=powerpc64-unknown-linux-gnu
+    #- env: TARGET=powerpc64le-unknown-linux-gnu
+    #- env: TARGET=s390x-unknown-linux-gnu DISABLE_TESTS=1
+
+    # Testing other channels
+    - env: TARGET=x86_64-unknown-linux-gnu
+      rust: nightly
+    - env: TARGET=x86_64-apple-darwin
+      os: osx
+      rust: nightly
+
+before_install: set -e
+
+install:
+  - sh ci/install.sh
+  - source ~/.cargo/env || true
+
 script:
-  - cargo build --target $TARGET
-  - cargo test --verbose --all
+  - bash ci/script.sh
+
+after_script: set +e
+
 before_deploy:
-  - cargo build --target $TARGET --release
-  - mkdir "racco-${TRAVIS_TAG}-${TARGET}"
-  - cp target/$TARGET/release/racco LICENSE.txt README.md "racco-${TRAVIS_TAG}-${TARGET}"
-  - zip "racco-${TRAVIS_TAG}-${TARGET}.zip" -r "racco-${TRAVIS_TAG}-${TARGET}"
+  - sh ci/before_deploy.sh
+
 deploy:
-  provider: releases
   api_key:
     secure: VBOy4nVuM2bzy+IRQXNWKdlZ9dSwRlB4WA3k3Ub3KT/galgQPUIKhv3D4Oc/0lKi9WfsdHNY8zsQ/kCjuc1oR6GWo44r89zjf51C2h3EnKgvRh4oPKxBgC/fteluILbgQIoii66i0+k88uIImrHV5U43edCVGHb+9b3KfYvmraIeZ8VcindsitMjkA+kaEwRcX72JjgI8GsWMAvl9IPrgMZZvKeCqZuqyt29OUBEJP9OHWAVunX9rM8rj8Y+dN3WUI/ZOpJFwtdSP5gR9fVgLArNija96QYLzBhcDLMkFTeNgkMnjyRJ/aorpetMHuyikdi7WmbDnfsMmdG0Q1Occ/N+9b02jG+kKbjzmFW+ZH4kuQpvDB1AeK/15Vp06FgySNTtWRJjGEvyMlkDItvZLY5vNmjcyXBPkws9Nq6nNFVQbW3gkN2PPZXThw4aVeHqzP14T5WgzcBIq8dkIh4g/ztSLeRfu3iZk3QfTFxfprvmE/1Rf73R1esZYzTTBB7MGVd9Ee2OFigxAIIqp/4fUhuxvrMQ6EmozBZbyNo2wYg2Jf8Sxo2sIAwn2ri/kQ99dEOfiljOMZHBKrFkyV5xcom0IKijxbDZHgVbyndVUspfz0eoDYi4gvLJFtc8HkjhzjNQLxI9LkJZS53mmxpqGYGwRywZK+8AX7H+KuaNx88=
-  file: racco-${TRAVIS_TAG}-${TARGET}.zip
-  skip_cleanup: true
+  file_glob: true
+  file: $CRATE_NAME-$TRAVIS_TAG-$TARGET.*
   on:
-    repo: micin-jp/racco
+    condition: $TRAVIS_RUST_VERSION = stable
     tags: true
+  provider: releases
+  skip_cleanup: true
 
+cache: cargo
+before_cache:
+  # Travis can't cache files that are not readable by "others"
+  - chmod -R a+r $HOME/.cargo
+
+#branches:
+#  only:
+#    # release tags
+#    - /^v\d+\.\d+\.\d+.*$/
+#    - master
+
+notifications:
+  email:
+    on_success: never
