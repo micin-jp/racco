@@ -97,7 +97,8 @@ impl<'c> ParamsExecExecuter<'c> {
             }
         }
 
-        let _result = cmd.spawn();
+        let mut child = try!(cmd.spawn());
+        let _output = try!(child.wait());
 
         Ok(())
     }
