@@ -181,7 +181,10 @@ impl MainCommand {
 
         let template_variables = MainCommand::parse_args_template_variables(&matches);
 
-        match config::command::Config::from_file(config_file.as_str(), template_variables.as_ref()) {
+        match config::command::Config::from_file(
+            config_file.as_str(),
+            template_variables.as_ref(),
+        ) {
             Err(error) => {
                 output::PrintLine::error(&format!("Failed loading the configuration: {}", error));
             }
@@ -212,7 +215,9 @@ impl MainCommand {
                     match cmd.run() {
                         Ok(_) => {}
                         Err(error) => {
-                            output::PrintLine::error(&format!("Failed running the task: {}", error));
+                            output::PrintLine::error(
+                                &format!("Failed running the task: {}", error),
+                            );
                         }
                     }
 
