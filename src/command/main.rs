@@ -195,7 +195,9 @@ impl MainCommand {
                     let cmd = DeployCommand::from_args(&config, sub_matches);
                     match cmd.run() {
                         Ok(_) => {}
-                        Err(error) => error!("deploy failed: {}", error),
+                        Err(error) => {
+                            output::PrintLine::error(&format!("Failed deployment: {}", error));
+                        }
                     }
 
                     info!("end deploy");
@@ -210,7 +212,7 @@ impl MainCommand {
                     match cmd.run() {
                         Ok(_) => {}
                         Err(error) => {
-                            output::PrintLine::error(&format!("Failed: {}", error));
+                            output::PrintLine::error(&format!("Failed running the task: {}", error));
                         }
                     }
 
