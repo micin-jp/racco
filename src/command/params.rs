@@ -20,16 +20,21 @@ pub trait ParamsExecuter {
     fn config(&self) -> &config::command::ParamsConfig;
 
     fn name_with_path(&self, name: &str) -> String {
-        let mut path = self.path();
+        let mut path = self.path(true);
         path.push_str(name);
         path
     }
 
-    fn path(&self) -> String {
+    fn path(&self, with_trailing_slash: bool) -> String {
         let mut path = self.config().path.to_owned();
-        if !path.ends_with("/") {
+
+        if with_trailing_slash && !path.ends_with("/") {
             path.push_str("/");
         }
+        if !with_trailing_slash && path.ends_with("/") {
+            path.trim_right_matches('/');
+        }
+
         if !path.starts_with("/") {
             path = format!("/{}", path);
         }
@@ -37,7 +42,7 @@ pub trait ParamsExecuter {
     }
 
     fn strip_path<'a>(&self, name: &'a str) -> Result<&'a str, Box<error::Error>> {
-        let path = self.path();
+        let path = self.path(true);
         if name.starts_with(&path) {
             return Ok(name.trim_left_matches(&path));
         } else {
@@ -46,7 +51,7 @@ pub trait ParamsExecuter {
     }
 
     fn params(&self) -> Result<Option<Vec<rusoto_ssm::Parameter>>, Box<error::Error>> {
-        let path = self.path();
+        let path = self.path(false);
         let with_decription = self.config().secure.is_some();
 
         let req = rusoto_ssm::GetParametersByPathRequest {
