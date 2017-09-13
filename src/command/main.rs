@@ -1,5 +1,7 @@
 use std::collections::BTreeMap;
 use std::error;
+use std::env;
+
 use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 
 use config;
@@ -32,6 +34,17 @@ impl MainCommand {
 
             data
         })
+    }
+
+    fn config_file(args: &ArgMatches) -> String {
+        if let Some(config_file) = args.value_of("CONFIG") {
+            return config_file.to_owned();
+        }
+        if let Ok(config_file) = env::var("RACCO_CONFIG_PATH") {
+            return config_file;
+        }
+
+        String::from("racco.yml")
     }
 
     pub fn run() -> Result<(), Box<error::Error>> {
@@ -163,13 +176,15 @@ impl MainCommand {
 
         info!("start racco");
 
-        let config_file = matches.value_of("CONFIG").unwrap_or("racco.yml");
+        let config_file = MainCommand::config_file(&matches);
         info!("config file: {}", config_file);
 
         let template_variables = MainCommand::parse_args_template_variables(&matches);
 
-        match config::command::Config::from_file(config_file, template_variables.as_ref()) {
-            Err(error) => error!("invalid config: {}", error),
+        match config::command::Config::from_file(config_file.as_str(), template_variables.as_ref()) {
+            Err(error) => {
+                output::PrintLine::error(&format!("Failed loading the configuration: {}", error));
+            }
             Ok(config) => {
 
                 // deploy
