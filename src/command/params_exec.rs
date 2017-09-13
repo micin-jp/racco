@@ -97,6 +97,7 @@ impl<'c> ParamsExecExecuter<'c> {
             }
         }
 
+        // TODO: Handle signals
         let mut child = try!(cmd.spawn());
         let _output = try!(child.wait());
 

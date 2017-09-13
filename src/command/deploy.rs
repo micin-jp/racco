@@ -143,6 +143,7 @@ impl<'c> DeployExecuter<'c> {
     fn wait_for_green(&self, service_conf: &config::ecs::Service) -> Result<(), Box<error::Error>> {
         let cluster = &self.config.cluster;
 
+        // TODO: Timeout
         loop {
             let maybe_service = try!(self.describe_service(cluster, service_conf));
             let service = try!(maybe_service.ok_or(Box::new(CommandError::Unknown)));
