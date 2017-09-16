@@ -1,54 +1,22 @@
 use std::error;
-
-use clap;
-use rusoto_ssm;
-
-use config;
-
 use std::io::stdout;
 use std::io::Write;
 use tabwriter::TabWriter;
 
+use rusoto_ssm;
 
-use super::params::ParamsExecuter;
+use config;
+use super::super::Executer as ParamsExecuter;
 
-pub struct ParamsListCommand<'c> {
-    config: &'c config::command::Config,
-}
-
-impl<'c> ParamsListCommand<'c> {
-    pub fn from_args(config: &'c config::command::Config, _args: &'c clap::ArgMatches<'c>) -> Self {
-        debug!("ParamsListCommand::from_args");
-
-        ParamsListCommand { config: config }
-    }
-
-    pub fn new(config: &'c config::command::Config) -> Self {
-        debug!("ParamsListCommand::new");
-
-        ParamsListCommand { config: config }
-    }
-
-    pub fn run(&self) -> Result<(), Box<error::Error>> {
-        debug!("ParamsListCommand::run");
-        if let Some(params_config) = self.config.params.as_ref() {
-
-            let exec = ParamsListExecuter::from_config(params_config);
-            try!(exec.run());
-        }
-        Ok(())
-    }
-}
-
-pub struct ParamsListExecuter<'c> {
+pub struct Executer<'c> {
     config: &'c config::command::ParamsConfig,
 }
 
-impl<'c> ParamsListExecuter<'c> {
+impl<'c> Executer<'c> {
     pub fn from_config(config: &'c config::command::ParamsConfig) -> Self {
         debug!("ParamsListExecuter::new");
 
-        ParamsListExecuter { config: config }
+        Executer { config: config }
     }
 
     pub fn run(&self) -> Result<(), Box<error::Error>> {
@@ -78,6 +46,6 @@ impl<'c> ParamsListExecuter<'c> {
     }
 }
 
-impl<'c> ParamsExecuter for ParamsListExecuter<'c> {
+impl<'c> ParamsExecuter for Executer<'c> {
     fn config(&self) -> &config::command::ParamsConfig { &self.config }
 }

@@ -7,10 +7,10 @@ use rusoto_ecs;
 use rusoto_ecs::{Ecs, EcsClient};
 
 use config;
-use super::error::CommandError;
+use command::error::CommandError;
 
 
-pub trait EcsExecuter {
+pub trait Executer {
     fn ecs_client(&self) -> &EcsClient<DefaultCredentialsProvider, hyper::client::Client>;
 
     fn describe_cluster(

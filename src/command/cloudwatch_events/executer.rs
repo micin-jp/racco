@@ -9,7 +9,7 @@ use rusoto_events::{CloudWatchEvents, CloudWatchEventsClient};
 use config;
 
 
-pub trait CloudWatchEventsExecuter {
+pub trait Executer {
     fn events_client(
         &self,
     ) -> &CloudWatchEventsClient<DefaultCredentialsProvider, hyper::client::Client>;

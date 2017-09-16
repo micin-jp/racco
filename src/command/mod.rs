@@ -1,25 +1,11 @@
 mod main;
-mod deploy;
-mod ecs;
 mod error;
+mod ecs;
 mod cloudwatch_events;
-mod params;
-mod params_delete;
-mod params_exec;
-mod params_list;
-mod params_get;
-mod params_put;
-mod run_task;
-mod schedule_task_put;
-mod schedule_task_delete;
+
+pub mod deploy;
+pub mod run_task;
+pub mod schedule_task;
+pub mod params;
 
 pub use self::main::MainCommand;
-pub use self::deploy::DeployCommand;
-pub use self::run_task::RunTaskCommand;
-pub use self::schedule_task_put::ScheduleTaskPutCommand;
-pub use self::schedule_task_delete::ScheduleTaskDeleteCommand;
-pub use self::params_delete::ParamsDeleteCommand;
-pub use self::params_exec::ParamsExecCommand;
-pub use self::params_list::ParamsListCommand;
-pub use self::params_get::ParamsGetCommand;
-pub use self::params_put::ParamsPutCommand;

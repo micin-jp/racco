@@ -1,59 +1,21 @@
 use std::error;
 
-use clap;
 use hyper;
 use rusoto_core::{default_tls_client, DefaultCredentialsProvider, Region};
 use rusoto_ecs::EcsClient;
 use rusoto_events::CloudWatchEventsClient;
 
-use config;
 use output;
 
-use super::ecs::EcsExecuter;
-use super::cloudwatch_events::CloudWatchEventsExecuter;
+use command::ecs::Executer as EcsExecuter;
+use command::cloudwatch_events::Executer as CloudwatchEventsExecuter;
 
-#[allow(dead_code)]
-pub struct ScheduleTaskDeleteCommand<'c> {
-    config: &'c config::command::Config,
-    name: &'c str,
-}
-
-impl<'c> ScheduleTaskDeleteCommand<'c> {
-    pub fn from_args(config: &'c config::command::Config, args: &'c clap::ArgMatches<'c>) -> Self {
-        debug!("ScheduleTaskDeleteCommand::from_args");
-
-        ScheduleTaskDeleteCommand {
-            config: config,
-            name: args.value_of("NAME").unwrap(),
-        }
-    }
-
-    pub fn new(config: &'c config::command::Config, name: &'c str) -> Self {
-        debug!("ScheduleTaskDeleteCommand::new");
-
-        ScheduleTaskDeleteCommand {
-            config: config,
-            name: name,
-        }
-    }
-
-    pub fn run(&self) -> Result<(), Box<error::Error>> {
-        debug!("ScheduleTaskDeleteCommand::run");
-
-        let schedule_del_exec = ScheduleTaskDeleteExecuter::new();
-        try!(schedule_del_exec.run(self.name));
-
-        Ok(())
-    }
-}
-
-
-pub struct ScheduleTaskDeleteExecuter {
+pub struct Executer {
     ecs_client: EcsClient<DefaultCredentialsProvider, hyper::client::Client>,
     events_client: CloudWatchEventsClient<DefaultCredentialsProvider, hyper::client::Client>,
 }
 
-impl ScheduleTaskDeleteExecuter {
+impl Executer {
     pub fn new() -> Self {
         debug!("ScheduleTaskDeleteExecuter::new");
 
@@ -68,7 +30,7 @@ impl ScheduleTaskDeleteExecuter {
             Region::ApNortheast1,
         );
 
-        ScheduleTaskDeleteExecuter {
+        Executer {
             ecs_client: ecs_client,
             events_client: events_client,
         }
@@ -84,13 +46,13 @@ impl ScheduleTaskDeleteExecuter {
     }
 }
 
-impl EcsExecuter for ScheduleTaskDeleteExecuter {
+impl EcsExecuter for Executer {
     fn ecs_client(&self) -> &EcsClient<DefaultCredentialsProvider, hyper::client::Client> {
         &self.ecs_client
     }
 }
 
-impl CloudWatchEventsExecuter for ScheduleTaskDeleteExecuter {
+impl CloudwatchEventsExecuter for Executer {
     fn events_client(
         &self,
     ) -> &CloudWatchEventsClient<DefaultCredentialsProvider, hyper::client::Client> {

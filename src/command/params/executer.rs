@@ -5,9 +5,9 @@ use rusoto_ssm;
 use rusoto_ssm::{Ssm, SsmClient};
 use config;
 
-use super::error::CommandError;
+use command::error::CommandError;
 
-pub trait ParamsExecuter {
+pub trait Executer {
     fn client(&self) -> SsmClient<DefaultCredentialsProvider, hyper::client::Client> {
         let credentials = DefaultCredentialsProvider::new().unwrap();
         return SsmClient::new(

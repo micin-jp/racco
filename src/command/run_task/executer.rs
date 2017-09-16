@@ -1,6 +1,5 @@
 use std::error;
 
-use clap;
 use hyper;
 use rusoto_core::{default_tls_client, DefaultCredentialsProvider, Region};
 use rusoto_ecs::EcsClient;
@@ -8,58 +7,15 @@ use rusoto_ecs::EcsClient;
 use config;
 use output;
 
-use super::error::CommandError;
-use super::ecs::EcsExecuter;
+use super::super::error::CommandError;
+use command::ecs::Executer as EcsExecuter;
 
-pub struct RunTaskCommand<'c> {
-    config: &'c config::command::Config,
-    name: &'c str,
-}
-
-impl<'c> RunTaskCommand<'c> {
-    pub fn from_args(config: &'c config::command::Config, args: &'c clap::ArgMatches<'c>) -> Self {
-        debug!("RunTaskCommand::from_args");
-
-        RunTaskCommand {
-            config: config,
-            name: args.value_of("NAME").unwrap(),
-        }
-    }
-
-    pub fn new(config: &'c config::command::Config, name: &'c str) -> Self {
-        debug!("RunTaskCommand::new");
-
-        RunTaskCommand {
-            config: config,
-            name: name,
-        }
-    }
-
-    pub fn run(&self) -> Result<(), Box<error::Error>> {
-        debug!("RunTaskCommand::run");
-
-        if let Some(run_task_config_group) = self.config.run_task.as_ref() {
-            for run_task_config in run_task_config_group {
-                if run_task_config.name != self.name {
-                    continue;
-                }
-
-                let ecs_run_task_cmd = RunTaskExecuter::from_config(&run_task_config);
-                try!(ecs_run_task_cmd.run());
-            }
-        }
-
-        Ok(())
-    }
-}
-
-
-pub struct RunTaskExecuter<'c> {
+pub struct Executer<'c> {
     ecs_client: EcsClient<DefaultCredentialsProvider, hyper::client::Client>,
     config: &'c config::command::RunTaskConfig,
 }
 
-impl<'c> RunTaskExecuter<'c> {
+impl<'c> Executer<'c> {
     pub fn from_config(config: &'c config::command::RunTaskConfig) -> Self {
         debug!("RunTaskExecuter::from_config");
 
@@ -69,7 +25,7 @@ impl<'c> RunTaskExecuter<'c> {
             credentials,
             Region::ApNortheast1,
         );
-        RunTaskExecuter {
+        Executer {
             ecs_client: client,
             config: config,
         }
@@ -94,7 +50,7 @@ impl<'c> RunTaskExecuter<'c> {
     }
 }
 
-impl<'c> EcsExecuter for RunTaskExecuter<'c> {
+impl<'c> EcsExecuter for Executer<'c> {
     fn ecs_client(&self) -> &EcsClient<DefaultCredentialsProvider, hyper::client::Client> {
         &self.ecs_client
     }

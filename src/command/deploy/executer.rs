@@ -2,7 +2,6 @@ use std::error;
 use std::time::Duration;
 use std::thread::sleep;
 
-use clap;
 use hyper;
 use rusoto_core::{default_tls_client, DefaultCredentialsProvider, Region};
 use rusoto_ecs;
@@ -11,60 +10,15 @@ use rusoto_ecs::EcsClient;
 use config;
 use output;
 
-use super::error::CommandError;
-use super::ecs::EcsExecuter;
+use command::error::CommandError;
+use command::ecs::Executer as EcsExecuter;
 
-pub struct DeployCommand<'c> {
-    config: &'c config::command::Config,
-    name: Option<&'c str>,
-}
-
-impl<'c> DeployCommand<'c> {
-    pub fn from_args(config: &'c config::command::Config, args: &'c clap::ArgMatches<'c>) -> Self {
-        debug!("DeployCommand::from_args");
-
-        DeployCommand {
-            config: config,
-            name: args.value_of("NAME"),
-        }
-    }
-
-    pub fn new(config: &'c config::command::Config, name: Option<&'c str>) -> Self {
-        debug!("DeployCommand::new");
-
-        DeployCommand {
-            config: config,
-            name: name,
-        }
-    }
-
-    pub fn run(&self) -> Result<(), Box<error::Error>> {
-        debug!("DeployCommand::run");
-
-        if let Some(deploy_config_group) = self.config.deploy.as_ref() {
-            for deploy_config in deploy_config_group {
-                if let Some(name) = self.name {
-                    if name != deploy_config.name {
-                        continue;
-                    }
-                }
-
-                let ecs_deploy_cmd = DeployExecuter::from_config(&deploy_config);
-                try!(ecs_deploy_cmd.run());
-            }
-        }
-
-        Ok(())
-    }
-}
-
-
-pub struct DeployExecuter<'c> {
+pub struct Executer<'c> {
     ecs_client: EcsClient<DefaultCredentialsProvider, hyper::client::Client>,
     config: &'c config::command::DeployConfig,
 }
 
-impl<'c> DeployExecuter<'c> {
+impl<'c> Executer<'c> {
     pub fn from_config(config: &'c config::command::DeployConfig) -> Self {
         debug!("DeployExecuter::from_config");
 
@@ -74,7 +28,7 @@ impl<'c> DeployExecuter<'c> {
             credentials,
             Region::ApNortheast1,
         );
-        DeployExecuter {
+        Executer {
             ecs_client: client,
             config: config,
         }
@@ -185,7 +139,7 @@ impl<'c> DeployExecuter<'c> {
     }
 }
 
-impl<'c> EcsExecuter for DeployExecuter<'c> {
+impl<'c> EcsExecuter for Executer<'c> {
     fn ecs_client(&self) -> &EcsClient<DefaultCredentialsProvider, hyper::client::Client> {
         &self.ecs_client
     }

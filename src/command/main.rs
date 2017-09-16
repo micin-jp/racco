@@ -7,9 +7,10 @@ use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 use config;
 use output;
 
-use super::{DeployCommand, ParamsDeleteCommand, ParamsExecCommand, ParamsGetCommand,
-            ParamsListCommand, ParamsPutCommand, RunTaskCommand, ScheduleTaskDeleteCommand,
-            ScheduleTaskPutCommand};
+use super::deploy;
+use super::run_task;
+use super::schedule_task;
+use super::params;
 
 pub struct MainCommand {}
 
@@ -195,7 +196,7 @@ impl MainCommand {
 
                     info!("start deploy");
 
-                    let cmd = DeployCommand::from_args(&config, sub_matches);
+                    let cmd = deploy::Command::from_args(&config, sub_matches);
                     match cmd.run() {
                         Ok(_) => {}
                         Err(error) => {
@@ -211,7 +212,7 @@ impl MainCommand {
 
                     info!("start run-task");
 
-                    let cmd = RunTaskCommand::from_args(&config, sub_matches);
+                    let cmd = run_task::Command::from_args(&config, sub_matches);
                     match cmd.run() {
                         Ok(_) => {}
                         Err(error) => {
@@ -229,7 +230,7 @@ impl MainCommand {
                     if let Some(sub1_matches) = sub0_matches.subcommand_matches("put") {
                         info!("start schedule-task put");
 
-                        let cmd = ScheduleTaskPutCommand::from_args(&config, sub1_matches);
+                        let cmd = schedule_task::put::Command::from_args(&config, sub1_matches);
                         match cmd.run() {
                             Ok(_) => {}
                             Err(error) => {
@@ -242,7 +243,7 @@ impl MainCommand {
                     if let Some(sub1_matches) = sub0_matches.subcommand_matches("delete") {
                         info!("start schedule-task delete");
 
-                        let cmd = ScheduleTaskDeleteCommand::from_args(&config, sub1_matches);
+                        let cmd = schedule_task::delete::Command::from_args(&config, sub1_matches);
                         match cmd.run() {
                             Ok(_) => {}
                             Err(error) => {
@@ -259,7 +260,7 @@ impl MainCommand {
                     if let Some(sub1_matches) = sub0_matches.subcommand_matches("get") {
                         info!("start params get");
 
-                        let cmd = ParamsGetCommand::from_args(&config, sub1_matches);
+                        let cmd = params::get::Command::from_args(&config, sub1_matches);
                         match cmd.run() {
                             Ok(_) => {}
                             Err(error) => {
@@ -272,7 +273,7 @@ impl MainCommand {
                     if let Some(sub1_matches) = sub0_matches.subcommand_matches("list") {
                         info!("start params list");
 
-                        let cmd = ParamsListCommand::from_args(&config, sub1_matches);
+                        let cmd = params::list::Command::from_args(&config, sub1_matches);
                         match cmd.run() {
                             Ok(_) => {}
                             Err(error) => {
@@ -285,7 +286,7 @@ impl MainCommand {
                     if let Some(sub1_matches) = sub0_matches.subcommand_matches("put") {
                         info!("start params put");
 
-                        let cmd = ParamsPutCommand::from_args(&config, sub1_matches);
+                        let cmd = params::put::Command::from_args(&config, sub1_matches);
                         match cmd.run() {
                             Ok(_) => {}
                             Err(error) => {
@@ -298,7 +299,7 @@ impl MainCommand {
                     if let Some(sub1_matches) = sub0_matches.subcommand_matches("delete") {
                         info!("start params delete");
 
-                        let cmd = ParamsDeleteCommand::from_args(&config, sub1_matches);
+                        let cmd = params::delete::Command::from_args(&config, sub1_matches);
                         match cmd.run() {
                             Ok(_) => {}
                             Err(error) => {
@@ -311,7 +312,7 @@ impl MainCommand {
                     if let Some(sub1_matches) = sub0_matches.subcommand_matches("exec") {
                         info!("start params exec");
 
-                        let cmd = ParamsExecCommand::from_args(&config, sub1_matches);
+                        let cmd = params::exec::Command::from_args(&config, sub1_matches);
                         match cmd.run() {
                             Ok(_) => {}
                             Err(error) => {
