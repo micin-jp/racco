@@ -3,7 +3,7 @@ mod error;
 mod ecs;
 mod cloudwatch_events;
 
-pub mod deploy;
+pub mod service;
 pub mod run_task;
 pub mod schedule_task;
 pub mod params;

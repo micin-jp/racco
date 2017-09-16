@@ -46,4 +46,3 @@ impl<'c> Command<'c> {
         Ok(())
     }
 }
-

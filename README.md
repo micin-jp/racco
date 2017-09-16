@@ -27,20 +27,20 @@ curl -sL https://raw.githubusercontent.com/micin-jp/racco/master/install.sh \
 
 ## Usage
 
-Racco has 4 sub commands `deploy`, `run-task`, `schedule-task` and `params`. To execute the commands, a configuration file named `racco.yml` is needed.
+Racco has 4 sub commands `service`, `run-task`, `schedule-task` and `params`. To execute the commands, a configuration file named `racco.yml` is needed.
 
 While Racco deploys applications to ECS by manipulating AWS resources, some resources are required to be provisioned beforehand.
-For example, to execute `deploy`, an ECS cluster required to be created. Specifying the cluster name, you can deploy ECS services on it. Creating and updating services are executed by Racco self.
+For example, to execute `service deploy`, an ECS cluster required to be created. Specifying the cluster name, you can deploy ECS services on it. Creating and updating services are executed by Racco self.
 
 See AWS documents for details of [ECS](http://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html).
 
-### Deploy
+### Service
 
 ```
-racco deploy [NAME]
+racco service deploy [NAME]
 ```
 
-This command updates ECS services. The section of `deploy` in the configuration file, has a service definition and a task definition to be run on the service.
+This command updates ECS services. The section of `service` in the configuration file, has a service definition and a task definition to be run on the service.
 
 Executing the command, a new task definition will be created, and update the service with its task definition. If there is no service, a new service will be created.
 
@@ -55,7 +55,7 @@ Executing the command, a new task definition will be created, and update the ser
 #### Example Configuration
 
 ```yml:racco.yml
-deploy:
+service:
   - name: racco-web
     cluster: racco-cluster
     service:

@@ -1,13 +1,13 @@
 extern crate racco;
 
-use racco::command::deploy;
+use racco::command::service;
 use racco::config;
 
 #[test]
-fn deploy_service() {
+fn service_deploy() {
 
-  let conf =  config::command::Config::from_file("fixtures/configs/deploy_service.yml", None).unwrap();
-  let cmd = deploy::Command::new(&conf, Some("racco-test-web"));
+  let conf = config::command::Config::from_file("fixtures/configs/deploy_service.yml", None).unwrap();
+  let cmd = service::deploy::Command::new(&conf, Some("racco-test-web"));
 
   // first time 
   let res1 = cmd.run();

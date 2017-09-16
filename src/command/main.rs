@@ -7,7 +7,7 @@ use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 use config;
 use output;
 
-use super::deploy;
+use super::service;
 use super::run_task;
 use super::schedule_task;
 use super::params;
@@ -73,12 +73,16 @@ impl MainCommand {
                     .validator(MainCommand::validate_args_template_variables),
             )
             .subcommand(
-                SubCommand::with_name("deploy")
-                    .about("Deploys ECS service")
-                    .arg(
-                        Arg::with_name("NAME")
-                            .help("Name of the entry in config")
-                            .index(1),
+                SubCommand::with_name("service")
+                    .about("Manages ECS services")
+                    .subcommand(
+                        SubCommand::with_name("deploy")
+                            .about("Deploys ECS service")
+                            .arg(
+                                Arg::with_name("NAME")
+                                    .help("Name of the entry in config")
+                                    .index(1),
+                            ),
                     ),
             )
             .subcommand(
@@ -192,19 +196,23 @@ impl MainCommand {
             Ok(config) => {
 
                 // deploy
-                if let Some(sub_matches) = matches.subcommand_matches("deploy") {
+                if let Some(sub0_matches) = matches.subcommand_matches("service") {
+                    if let Some(sub1_matches) = sub0_matches.subcommand_matches("deploy") {
 
-                    info!("start deploy");
+                        info!("start service deploy");
 
-                    let cmd = deploy::Command::from_args(&config, sub_matches);
-                    match cmd.run() {
-                        Ok(_) => {}
-                        Err(error) => {
-                            output::PrintLine::error(&format!("Failed deployment: {}", error));
+                        let cmd = service::deploy::Command::from_args(&config, sub1_matches);
+                        match cmd.run() {
+                            Ok(_) => {}
+                            Err(error) => {
+                                output::PrintLine::error(
+                                    &format!("Failed deploying the service: {}", error),
+                                );
+                            }
                         }
-                    }
 
-                    info!("end deploy");
+                        info!("end service deploy");
+                    }
                 }
 
                 // run-task
