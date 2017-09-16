@@ -6,7 +6,7 @@ use racco::config;
 #[test]
 fn service_deploy() {
 
-  let conf = config::command::Config::from_file("fixtures/configs/deploy_service.yml", None).unwrap();
+  let conf = config::command::Config::from_file("fixtures/configs/service_deploy.yml", None).unwrap();
   let cmd = service::deploy::Command::new(&conf, Some("racco-test-web"));
 
   // first time 
