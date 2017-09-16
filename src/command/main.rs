@@ -7,6 +7,8 @@ use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 use config;
 use output;
 
+use super::error::CommandError;
+
 use super::service;
 use super::run_task;
 use super::schedule_task;
@@ -179,8 +181,6 @@ impl MainCommand {
             )
             .get_matches();
 
-        info!("start racco");
-
         let config_file = MainCommand::config_file(&matches);
         info!("config file: {}", config_file);
 
@@ -192,6 +192,7 @@ impl MainCommand {
         ) {
             Err(error) => {
                 output::PrintLine::error(&format!("Failed loading the configuration: {}", error));
+                return Err(error)
             }
             Ok(config) => {
 
@@ -203,15 +204,18 @@ impl MainCommand {
 
                         let cmd = service::deploy::Command::from_args(&config, sub1_matches);
                         match cmd.run() {
-                            Ok(_) => {}
+                            Ok(_) => {
+                                info!("end service deploy");
+                                return Ok(())
+                            }
                             Err(error) => {
                                 output::PrintLine::error(
                                     &format!("Failed deploying the service: {}", error),
                                 );
+                                return Err(error)
                             }
                         }
 
-                        info!("end service deploy");
                     }
                 }
 
@@ -222,15 +226,18 @@ impl MainCommand {
 
                     let cmd = run_task::Command::from_args(&config, sub_matches);
                     match cmd.run() {
-                        Ok(_) => {}
+                        Ok(_) => {
+                            info!("end run-task");
+                            return Ok(())
+                        }
                         Err(error) => {
                             output::PrintLine::error(
                                 &format!("Failed running the task: {}", error),
                             );
+                            return Err(error)
                         }
                     }
 
-                    info!("end run-task");
                 }
 
                 // schedule-task
@@ -240,26 +247,30 @@ impl MainCommand {
 
                         let cmd = schedule_task::put::Command::from_args(&config, sub1_matches);
                         match cmd.run() {
-                            Ok(_) => {}
+                            Ok(_) => {
+                                info!("end schdule-task put");
+                                return Ok(())
+                            }
                             Err(error) => {
                                 output::PrintLine::error(&format!("Failed: {}", error));
+                                return Err(error)
                             }
                         }
-
-                        info!("end schdule-task put");
                     }
                     if let Some(sub1_matches) = sub0_matches.subcommand_matches("delete") {
                         info!("start schedule-task delete");
 
                         let cmd = schedule_task::delete::Command::from_args(&config, sub1_matches);
                         match cmd.run() {
-                            Ok(_) => {}
+                            Ok(_) => {
+                                info!("end schedule-task delete");
+                                return Ok(())
+                            }
                             Err(error) => {
                                 output::PrintLine::error(&format!("Failed: {}", error));
+                                return Err(error)
                             }
                         }
-
-                        info!("end schedule-task delete");
                     }
                 }
 
@@ -270,72 +281,82 @@ impl MainCommand {
 
                         let cmd = params::get::Command::from_args(&config, sub1_matches);
                         match cmd.run() {
-                            Ok(_) => {}
+                            Ok(_) => {
+                                info!("end params get");
+                                return Ok(())
+                            }
                             Err(error) => {
                                 output::PrintLine::error(&format!("Failed: {}", error));
+                                return Err(error)
                             }
                         }
 
-                        info!("end params get");
                     }
                     if let Some(sub1_matches) = sub0_matches.subcommand_matches("list") {
                         info!("start params list");
 
                         let cmd = params::list::Command::from_args(&config, sub1_matches);
                         match cmd.run() {
-                            Ok(_) => {}
+                            Ok(_) => {
+                                info!("end params list");
+                                return Ok(())
+                            }
                             Err(error) => {
                                 output::PrintLine::error(&format!("Failed: {}", error));
+                                return Err(error)
                             }
                         }
-
-                        info!("end params list");
                     }
                     if let Some(sub1_matches) = sub0_matches.subcommand_matches("put") {
                         info!("start params put");
 
                         let cmd = params::put::Command::from_args(&config, sub1_matches);
                         match cmd.run() {
-                            Ok(_) => {}
+                            Ok(_) => {
+                                info!("end params put");
+                                return Ok(())
+                            }
                             Err(error) => {
                                 output::PrintLine::error(&format!("Failed: {}", error));
+                                return Err(error)
                             }
                         }
-
-                        info!("end params put");
                     }
                     if let Some(sub1_matches) = sub0_matches.subcommand_matches("delete") {
                         info!("start params delete");
 
                         let cmd = params::delete::Command::from_args(&config, sub1_matches);
                         match cmd.run() {
-                            Ok(_) => {}
+                            Ok(_) => {
+                                info!("end params delete");
+                                return Ok(())
+                            }
                             Err(error) => {
                                 output::PrintLine::error(&format!("Failed: {}", error));
+                                return Err(error)
                             }
                         }
-
-                        info!("end params delete");
                     }
                     if let Some(sub1_matches) = sub0_matches.subcommand_matches("exec") {
                         info!("start params exec");
 
                         let cmd = params::exec::Command::from_args(&config, sub1_matches);
                         match cmd.run() {
-                            Ok(_) => {}
+                            Ok(_) => {
+                                info!("end params exec");
+                                return Ok(())
+                            }
                             Err(error) => {
                                 output::PrintLine::error(&format!("Failed: {}", error));
+                                return Err(error)
                             }
                         }
 
-                        info!("end params exec");
                     }
                 }
             }
         };
 
-        info!("end racco");
-
-        Ok(())
+        Err(Box::new(CommandError::CommandNotFound))
     }
 }
