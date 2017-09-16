@@ -21,7 +21,7 @@ pub struct Executer<'c> {
 
 impl<'c> Executer<'c> {
     pub fn from_config(config: &'c config::command::ScheduleTaskConfig) -> Self {
-        debug!("ScheduleTaskPutExecuter::from_config");
+        trace!("command::schedule_task::put::Executer::from_config");
 
         let ecs_client = EcsClient::new(
             default_tls_client().unwrap(),
@@ -42,7 +42,7 @@ impl<'c> Executer<'c> {
     }
 
     pub fn run(&self) -> Result<(), Box<error::Error>> {
-        debug!("ScheduleTaskPutExecuter::run");
+        trace!("command::schedule_task::put::Executer::run");
 
         let maybe_ecs_cluster = try!(self.describe_cluster(&self.config.cluster));
         let ecs_cluster = try!(maybe_ecs_cluster.ok_or(Box::new(CommandError::Unknown)));

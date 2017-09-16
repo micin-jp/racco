@@ -12,7 +12,7 @@ pub struct Command<'c> {
 
 impl<'c> Command<'c> {
     pub fn from_args(config: &'c config::command::Config, args: &'c clap::ArgMatches<'c>) -> Self {
-        debug!("RunTaskCommand::from_args");
+        trace!("command::run_task::Command::from_args");
 
         Command {
             config: config,
@@ -21,7 +21,7 @@ impl<'c> Command<'c> {
     }
 
     pub fn new(config: &'c config::command::Config, name: &'c str) -> Self {
-        debug!("RunTaskCommand::new");
+        trace!("command::run_task::Command::new");
 
         Command {
             config: config,
@@ -30,7 +30,7 @@ impl<'c> Command<'c> {
     }
 
     pub fn run(&self) -> Result<(), Box<error::Error>> {
-        debug!("RunTaskCommand::run");
+        trace!("command::run_task::Command::run");
 
         if let Some(run_task_config_group) = self.config.run_task.as_ref() {
             for run_task_config in run_task_config_group {

@@ -51,6 +51,7 @@ pub trait Executer {
     }
 
     fn params(&self) -> Result<Option<Vec<rusoto_ssm::Parameter>>, Box<error::Error>> {
+        trace!("command::params::Executer::params");
         let path = self.path(false);
         let with_decription = self.config().secure.is_some();
 

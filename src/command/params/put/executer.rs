@@ -14,13 +14,13 @@ pub struct Executer<'c> {
 
 impl<'c> Executer<'c> {
     pub fn from_config(config: &'c config::command::ParamsConfig) -> Self {
-        debug!("ParamsPutExecuter::new");
+        trace!("command::params::put::Executer::from_config");
 
         Executer { config: config }
     }
 
     pub fn run(&self, name: &str, value: &str) -> Result<(), Box<error::Error>> {
-        debug!("ParamsPutExecuter::run");
+        trace!("command::params::put::Executer::run");
 
         let (type_, key_id) = if let Some(secure) = self.config.secure.as_ref() {
             (String::from("SecureString"), Some(secure.key.to_owned()))

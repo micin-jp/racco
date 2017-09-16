@@ -15,7 +15,7 @@ pub trait Executer {
     ) -> &CloudWatchEventsClient<DefaultCredentialsProvider, hyper::client::Client>;
 
     fn delete_rule(&self, rule_name: &str) -> Result<(), Box<error::Error>> {
-        debug!("CloudWatchEventsExecuter::delete_rule");
+        trace!("command::cloudwatch_events::Executer::delete_rule");
 
         let req = rusoto_events::DeleteRuleRequest { name: rule_name.to_owned() };
 
@@ -29,7 +29,7 @@ pub trait Executer {
         &self,
         rule_conf: &config::cloudwatch_events::ScheduleRule,
     ) -> Result<(), Box<error::Error>> {
-        debug!("CloudWatchEventsExecuter::put_rule");
+        trace!("command::cloudwatch_events::Executer::put_rule");
 
         let req = rusoto_events::PutRuleRequest {
             name: rule_conf.name.to_owned(),
@@ -50,7 +50,7 @@ pub trait Executer {
         cluster_arn: &str,
         task_definition_arn: &str,
     ) -> Result<(), Box<error::Error>> {
-        debug!("CloudWatchEventsExecuter::put_ecs_task_target");
+        trace!("command::cloudwatch_events::Executer::put_ecs_task_target");
 
         let targets = vec![
             rusoto_events::Target {

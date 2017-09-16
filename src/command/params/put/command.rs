@@ -13,7 +13,7 @@ pub struct Command<'c> {
 
 impl<'c> Command<'c> {
     pub fn from_args(config: &'c config::command::Config, args: &'c clap::ArgMatches<'c>) -> Self {
-        debug!("ParamsPutCommand::from_args");
+        trace!("command::params::put::Command::from_args");
         Command {
             config: config,
             name: args.value_of("NAME").unwrap(),
@@ -22,7 +22,7 @@ impl<'c> Command<'c> {
     }
 
     pub fn new(config: &'c config::command::Config, name: &'c str, value: &'c str) -> Self {
-        debug!("ParamsPutCommand::new");
+        trace!("command::params::put::Command::new");
         Command {
             config: config,
             name: name,
@@ -31,7 +31,7 @@ impl<'c> Command<'c> {
     }
 
     pub fn run(&self) -> Result<(), Box<error::Error>> {
-        debug!("ParamsPutCommand::run");
+        trace!("command::params::put::Command::run");
         if let Some(params_config) = self.config.params.as_ref() {
 
             let exec = Executer::from_config(&params_config);

@@ -12,7 +12,7 @@ pub struct Command<'c> {
 
 impl<'c> Command<'c> {
     pub fn from_args(config: &'c config::command::Config, args: &'c clap::ArgMatches<'c>) -> Self {
-        debug!("DeployCommand::from_args");
+        trace!("command::service::deploy::Command::from_args");
 
         Command {
             config: config,
@@ -21,7 +21,7 @@ impl<'c> Command<'c> {
     }
 
     pub fn new(config: &'c config::command::Config, name: Option<&'c str>) -> Self {
-        debug!("DeployCommand::new");
+        trace!("command::service::deploy::Command::new");
 
         Command {
             config: config,
@@ -30,7 +30,7 @@ impl<'c> Command<'c> {
     }
 
     pub fn run(&self) -> Result<(), Box<error::Error>> {
-        debug!("DeployCommand::run");
+        trace!("command::service::deploy::Command::run");
 
         if let Some(deploy_config_group) = self.config.deploy.as_ref() {
             for deploy_config in deploy_config_group {

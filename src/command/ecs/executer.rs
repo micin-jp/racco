@@ -17,7 +17,7 @@ pub trait Executer {
         &self,
         name: &str,
     ) -> Result<Option<rusoto_ecs::Cluster>, Box<error::Error>> {
-        debug!("EcsCommand::describe_cluster");
+        trace!("command::ecs::Executer::describe_cluster");
 
         let req = rusoto_ecs::DescribeClustersRequest { clusters: Some(vec![name.to_owned()]) };
 
@@ -42,7 +42,7 @@ pub trait Executer {
         &self,
         family: &str,
     ) -> Result<Option<rusoto_ecs::TaskDefinition>, Box<error::Error>> {
-        debug!("EcsCommand::describe_latest_task_definition");
+        trace!("command::ecs::Executer::describe_latest_task_definition");
 
         let req = rusoto_ecs::DescribeTaskDefinitionRequest { task_definition: family.to_owned() };
 
@@ -64,7 +64,7 @@ pub trait Executer {
         &self,
         task_definition_conf: &config::ecs::TaskDefinition,
     ) -> Result<rusoto_ecs::TaskDefinition, Box<error::Error>> {
-        debug!("EcsCommand::register_task_definition");
+        trace!("command::ecs::Executer::register_task_definition");
         let req = rusoto_ecs::RegisterTaskDefinitionRequest {
             family: task_definition_conf.family.to_owned(),
             task_role_arn: task_definition_conf.task_role_arn.to_owned(),
@@ -89,7 +89,7 @@ pub trait Executer {
         service_conf: &config::ecs::Service,
         task_definition: &str,
     ) -> Result<rusoto_ecs::Service, Box<error::Error>> {
-        debug!("EcsCommand::register_task_definition");
+        trace!("command::ecs::Executer::create_service");
 
         let req = rusoto_ecs::CreateServiceRequest {
             cluster: Some(cluster.to_owned()),
@@ -115,7 +115,7 @@ pub trait Executer {
         cluster: &str,
         service_conf: &config::ecs::Service,
     ) -> Result<Option<rusoto_ecs::Service>, Box<error::Error>> {
-        debug!("EcsCommand::describe_service");
+        trace!("command::ecs::Executer::describe_service");
 
         let req = rusoto_ecs::DescribeServicesRequest {
             cluster: Some(cluster.to_owned()),
@@ -145,7 +145,7 @@ pub trait Executer {
         service_conf: &config::ecs::Service,
         task_definition: &rusoto_ecs::TaskDefinition,
     ) -> Result<rusoto_ecs::Service, Box<error::Error>> {
-        debug!("EcsCommand::update_service");
+        trace!("command::ecs::Executer::update_service");
 
         if task_definition.task_definition_arn.is_none() {
             return Err(Box::new(CommandError::Unknown));

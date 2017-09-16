@@ -17,7 +17,7 @@ impl<'c> Command<'c> {
         config: &'c config::command::Config,
         clap_args: &'c clap::ArgMatches<'c>,
     ) -> Self {
-        debug!("ParamsExecCommand::from_args");
+        trace!("command::params::exec::Command::from_args");
 
         let program = clap_args.value_of("PROGRAM").unwrap();
         let args = match clap_args.values_of("ARGS") {
@@ -37,7 +37,7 @@ impl<'c> Command<'c> {
         program: &'c Program<'c>,
         args: &'c Arguments<'c>,
     ) -> Self {
-        debug!("ParamsExecCommand::new");
+        trace!("command::params::exec::Command::new");
 
         Command {
             config: config,
@@ -47,7 +47,7 @@ impl<'c> Command<'c> {
     }
 
     pub fn run(&self) -> Result<(), Box<error::Error>> {
-        debug!("ParamsExecCommand::run");
+        trace!("command::params::exec::Command::run");
         if let Some(params_config) = self.config.params.as_ref() {
             let exec = Executer::from_config(params_config);
             try!(exec.run(&self.program, &self.args));

@@ -12,7 +12,7 @@ pub struct Command<'c> {
 
 impl<'c> Command<'c> {
     pub fn from_args(config: &'c config::command::Config, args: &'c clap::ArgMatches<'c>) -> Self {
-        debug!("ScheduleTaskPutCommand::from_args");
+        trace!("command::schedule_task::put::Command::run");
 
         Command {
             config: config,
@@ -21,7 +21,7 @@ impl<'c> Command<'c> {
     }
 
     pub fn new(config: &'c config::command::Config, name: &'c str) -> Self {
-        debug!("ScheduleTaskPutCommand::new");
+        trace!("command::schedule_task::put::Command::new");
 
         Command {
             config: config,
@@ -30,7 +30,7 @@ impl<'c> Command<'c> {
     }
 
     pub fn run(&self) -> Result<(), Box<error::Error>> {
-        debug!("ScheduleTaskPutCommand::run");
+        trace!("command::schedule_task::put::Command::run");
 
         if let Some(schedule_config_group) = self.config.schedule_task.as_ref() {
             for schedule_config in schedule_config_group {

@@ -14,13 +14,13 @@ pub struct Executer<'c> {
 
 impl<'c> Executer<'c> {
     pub fn from_config(config: &'c config::command::ParamsConfig) -> Self {
-        debug!("ParamsDeleteExecuter::new");
+        trace!("command::params::delete::Executer::from_config");
 
         Executer { config: config }
     }
 
     pub fn run(&self, name: &str) -> Result<(), Box<error::Error>> {
-        debug!("ParamsDeleteExecuter::run");
+        trace!("command::params::delete::Executer::run");
 
         let req = rusoto_ssm::DeleteParameterRequest {
             name: self.name_with_path(name),

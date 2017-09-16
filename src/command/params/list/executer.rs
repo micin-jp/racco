@@ -14,13 +14,13 @@ pub struct Executer<'c> {
 
 impl<'c> Executer<'c> {
     pub fn from_config(config: &'c config::command::ParamsConfig) -> Self {
-        debug!("ParamsListExecuter::new");
+        trace!("command::params::list::Executer::from_config");
 
         Executer { config: config }
     }
 
     pub fn run(&self) -> Result<(), Box<error::Error>> {
-        debug!("ParamsListExecuter::run");
+        trace!("command::params::list::Executer::run");
 
         let maybe_params = try!(self.params());
 

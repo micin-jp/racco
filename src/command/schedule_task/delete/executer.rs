@@ -17,7 +17,7 @@ pub struct Executer {
 
 impl Executer {
     pub fn new() -> Self {
-        debug!("ScheduleTaskDeleteExecuter::new");
+        trace!("command::schedule_task::delete::Executer::new");
 
         let ecs_client = EcsClient::new(
             default_tls_client().unwrap(),
@@ -37,7 +37,7 @@ impl Executer {
     }
 
     pub fn run(&self, rule_name: &str) -> Result<(), Box<error::Error>> {
-        debug!("ScheduleTaskDeleteExecuter::run");
+        trace!("command::schedule_task::delete::Executer::run");
 
         try!(self.delete_rule(rule_name));
 

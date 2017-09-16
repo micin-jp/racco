@@ -13,7 +13,7 @@ pub struct Command<'c> {
 
 impl<'c> Command<'c> {
     pub fn from_args(config: &'c config::command::Config, args: &'c clap::ArgMatches<'c>) -> Self {
-        debug!("ScheduleTaskDeleteCommand::from_args");
+        trace!("command::schedule_task::delete::Command::from_args");
 
         Command {
             config: config,
@@ -22,7 +22,7 @@ impl<'c> Command<'c> {
     }
 
     pub fn new(config: &'c config::command::Config, name: &'c str) -> Self {
-        debug!("ScheduleTaskDeleteCommand::new");
+        trace!("command::schedule_task::delete::Command::new");
 
         Command {
             config: config,
@@ -31,7 +31,7 @@ impl<'c> Command<'c> {
     }
 
     pub fn run(&self) -> Result<(), Box<error::Error>> {
-        debug!("ScheduleTaskDeleteCommand::run");
+        trace!("command::schedule_task::delete::Command::run");
 
         let schedule_del_exec = Executer::new();
         try!(schedule_del_exec.run(self.name));

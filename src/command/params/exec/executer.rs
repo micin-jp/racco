@@ -12,7 +12,7 @@ pub struct Executer<'c> {
 
 impl<'c> Executer<'c> {
     pub fn from_config(config: &'c config::command::ParamsConfig) -> Self {
-        debug!("ParamsGetExecuter::new");
+        trace!("command::params::exec::Executer::from_config");
 
         Executer { config: config }
     }
@@ -22,7 +22,7 @@ impl<'c> Executer<'c> {
         program: &'c Program<'c>,
         args: &'c Arguments<'c>,
     ) -> Result<(), Box<error::Error>> {
-        debug!("ParamsExecExecuter::run");
+        trace!("command::params::exec::Executer::run");
 
         info!("exec: {} {}", program, args.join(" "));
         let maybe_params = try!(self.params());

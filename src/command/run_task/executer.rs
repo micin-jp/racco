@@ -17,7 +17,7 @@ pub struct Executer<'c> {
 
 impl<'c> Executer<'c> {
     pub fn from_config(config: &'c config::command::RunTaskConfig) -> Self {
-        debug!("RunTaskExecuter::from_config");
+        trace!("command::run_task::Executer::from_config");
 
         let credentials = DefaultCredentialsProvider::new().unwrap();
         let client = EcsClient::new(
@@ -32,7 +32,7 @@ impl<'c> Executer<'c> {
     }
 
     pub fn run(&self) -> Result<(), Box<error::Error>> {
-        debug!("RunTaskExecuter::run");
+        trace!("command::run_task::Executer::run");
 
         output::PrintLine::info("Registering a task definition");
         let task_definition = try!(self.register_task_definition(&self.config.task_definition));

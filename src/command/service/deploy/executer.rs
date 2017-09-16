@@ -20,7 +20,7 @@ pub struct Executer<'c> {
 
 impl<'c> Executer<'c> {
     pub fn from_config(config: &'c config::command::DeployConfig) -> Self {
-        debug!("DeployExecuter::from_config");
+        trace!("command::service::deploy::Executer::from_config");
 
         let credentials = DefaultCredentialsProvider::new().unwrap();
         let client = EcsClient::new(
@@ -35,7 +35,7 @@ impl<'c> Executer<'c> {
     }
 
     pub fn run(&self) -> Result<(), Box<error::Error>> {
-        debug!("DeployExecuter::run");
+        trace!("command::service::deploy::Executer::run");
 
         let service_conf = &self.config.service;
         let cluster = &self.config.cluster;
@@ -95,6 +95,7 @@ impl<'c> Executer<'c> {
     }
 
     fn wait_for_green(&self, service_conf: &config::ecs::Service) -> Result<(), Box<error::Error>> {
+        trace!("command::service::deploy::Executer::wait_for_green");
         let cluster = &self.config.cluster;
 
         // TODO: Timeout

@@ -14,13 +14,13 @@ pub struct Executer<'c> {
 
 impl<'c> Executer<'c> {
     pub fn from_config(config: &'c config::command::ParamsConfig) -> Self {
-        debug!("ParamsGetExecuter::new");
+        trace!("command::params::get::Executer::from_config");
 
         Executer { config: config }
     }
 
     pub fn run(&self, name: &str) -> Result<(), Box<error::Error>> {
-        debug!("ParamsGetExecuter::run");
+        trace!("command::params::get::Executer::run");
 
         let name_with_path = self.name_with_path(name);
         let with_decription = self.config.secure.is_some();
