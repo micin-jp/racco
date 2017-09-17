@@ -7,7 +7,7 @@ use super::executer::Executer;
 
 pub struct Command<'c> {
     config: &'c config::command::Config,
-    name: Option<&'c str>,
+    name: &'c str,
 }
 
 impl<'c> Command<'c> {
@@ -16,11 +16,11 @@ impl<'c> Command<'c> {
 
         Command {
             config: config,
-            name: args.value_of("NAME"),
+            name: args.value_of("NAME").unwrap(),
         }
     }
 
-    pub fn new(config: &'c config::command::Config, name: Option<&'c str>) -> Self {
+    pub fn new(config: &'c config::command::Config, name: &'c str) -> Self {
         trace!("command::service::deploy::Command::new");
 
         Command {
@@ -34,10 +34,8 @@ impl<'c> Command<'c> {
 
         if let Some(deploy_config_group) = self.config.deploy.as_ref() {
             for deploy_config in deploy_config_group {
-                if let Some(name) = self.name {
-                    if name != deploy_config.name {
-                        continue;
-                    }
+                if self.name != deploy_config.name {
+                    continue;
                 }
 
                 let ecs_deploy_cmd = Executer::from_config(&deploy_config);

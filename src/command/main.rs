@@ -83,6 +83,7 @@ impl MainCommand {
                             .arg(
                                 Arg::with_name("NAME")
                                     .help("Name of the entry in config")
+                                    .required(true)
                                     .index(1),
                             ),
                     ),
