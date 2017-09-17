@@ -13,13 +13,21 @@ use output;
 use command::error::CommandError;
 use command::ecs::Executer as EcsExecuter;
 
+pub struct ExecuterOptions {
+    pub no_wait: bool,
+}
+
 pub struct Executer<'c> {
     ecs_client: EcsClient<DefaultCredentialsProvider, hyper::client::Client>,
     config: &'c config::command::DeployConfig,
+    options: &'c ExecuterOptions,
 }
 
 impl<'c> Executer<'c> {
-    pub fn from_config(config: &'c config::command::DeployConfig) -> Self {
+    pub fn from_config(
+        config: &'c config::command::DeployConfig,
+        options: &'c ExecuterOptions,
+    ) -> Self {
         trace!("command::service::deploy::Executer::from_config");
 
         let credentials = DefaultCredentialsProvider::new().unwrap();
@@ -31,6 +39,7 @@ impl<'c> Executer<'c> {
         Executer {
             ecs_client: client,
             config: config,
+            options: options,
         }
     }
 
@@ -48,8 +57,7 @@ impl<'c> Executer<'c> {
             if self.detect_task_definition_changes(
                 &service_conf.task_definition,
                 &latest_task_definition,
-            )
-            {
+            ) {
                 output::PrintLine::info("Registering a task definition");
                 try!(self.register_task_definition(&service_conf.task_definition))
             } else {
@@ -60,11 +68,12 @@ impl<'c> Executer<'c> {
             try!(self.register_task_definition(&service_conf.task_definition))
         };
 
-        let task_definition_arn = try!(task_definition.task_definition_arn.as_ref().ok_or(
-            Box::new(
-                CommandError::Unknown,
-            ),
-        ));
+        let task_definition_arn = try!(
+            task_definition
+                .task_definition_arn
+                .as_ref()
+                .ok_or(Box::new(CommandError::Unknown,),)
+        );
 
         let maybe_service = try!(self.describe_service(cluster, &service_conf));
 
@@ -88,7 +97,9 @@ impl<'c> Executer<'c> {
         ));
         output::PrintLine::info("Finished updating the service");
 
-        try!(self.wait_for_green(&service_conf));
+        if !self.options.no_wait {
+            try!(self.wait_for_green(&service_conf));
+        }
 
         output::PrintLine::success("Deployment completed");
         Ok(())

@@ -85,6 +85,11 @@ impl MainCommand {
                                     .help("Name of the entry in config")
                                     .required(true)
                                     .index(1),
+                            )
+                            .arg(
+                                Arg::with_name("NO_WAIT")
+                                    .help("Do not wait until new tasks to be running")
+                                    .long("no-wait")
                             ),
                     ),
             )
