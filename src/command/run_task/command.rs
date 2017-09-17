@@ -3,11 +3,12 @@ use std::error;
 use clap;
 use config;
 
-use super::executer::Executer;
+use super::executer::{Executer, ExecuterOptions};
 
 pub struct Command<'c> {
     config: &'c config::command::Config,
     name: &'c str,
+    no_wait: bool,
 }
 
 impl<'c> Command<'c> {
@@ -17,15 +18,17 @@ impl<'c> Command<'c> {
         Command {
             config: config,
             name: args.value_of("NAME").unwrap(),
+            no_wait: args.is_present("NO_WAIT"),
         }
     }
 
-    pub fn new(config: &'c config::command::Config, name: &'c str) -> Self {
+    pub fn new(config: &'c config::command::Config, name: &'c str, no_wait: bool) -> Self {
         trace!("command::run_task::Command::new");
 
         Command {
             config: config,
             name: name,
+            no_wait: no_wait,
         }
     }
 
@@ -38,7 +41,10 @@ impl<'c> Command<'c> {
                     continue;
                 }
 
-                let ecs_run_task_cmd = Executer::from_config(&run_task_config);
+                let options = ExecuterOptions {
+                    no_wait: self.no_wait,
+                };
+                let ecs_run_task_cmd = Executer::from_config(&run_task_config, &options);
                 try!(ecs_run_task_cmd.run());
             }
         }

@@ -137,7 +137,7 @@ impl<'c> Executer<'c> {
                         break;
                     } else {
                         output::PrintLine::info(&format!(
-                            "Waiting for new tasks to run... (desired_count:{}, running_count:{}",
+                            "Waiting for new tasks to run... (desired_count:{}, running_count:{})",
                             desired_count,
                             running_count
                         ));

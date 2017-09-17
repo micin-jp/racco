@@ -9,6 +9,10 @@ use rusoto_ecs::{Ecs, EcsClient};
 use config;
 use command::error::CommandError;
 
+pub struct TaskDescription {
+    pub task: Option<rusoto_ecs::Task>,
+    pub failure: Option<rusoto_ecs::Failure>
+}
 
 pub trait Executer {
     fn ecs_client(&self) -> &EcsClient<DefaultCredentialsProvider, hyper::client::Client>;
@@ -169,7 +173,30 @@ pub trait Executer {
         service.ok_or(Box::new(CommandError::Unknown))
     }
 
-    fn run_task(&self, cluster: &str, task_definition_arn: &str) -> Result<(), Box<error::Error>> {
+    fn describe_task(&self, cluster: &str, task_arn: &str) -> Result<TaskDescription, Box<error::Error>> {
+
+        let req = rusoto_ecs::DescribeTasksRequest {
+            cluster: Some(cluster.to_owned()),
+            tasks: vec![task_arn.to_owned()],
+            ..Default::default()
+        };
+
+        let result = try!(self.ecs_client().describe_tasks(&req));
+        debug!("{:?}", result);
+
+        let failure = result.failures.as_ref().and_then(|failures| failures.first()).map(|f| f.to_owned());
+        match result.tasks.as_ref().and_then(|tasks| tasks.first()) {
+            Some(task) => {
+                Ok(TaskDescription {
+                    task: Some(task.to_owned()),
+                    failure: failure,
+                })
+            }
+            None => Err(Box::new(CommandError::Unknown))
+        }
+    }
+
+    fn run_task(&self, cluster: &str, task_definition_arn: &str) -> Result<TaskDescription, Box<error::Error>> {
 
         let req = rusoto_ecs::RunTaskRequest {
             cluster: Some(cluster.to_owned()),
@@ -177,10 +204,21 @@ pub trait Executer {
             ..Default::default()
         };
 
-        try!(self.ecs_client().run_task(&req));
+        let result = try!(self.ecs_client().run_task(&req));
         info!("Completed to run task successfully");
 
-        Ok(())
+        debug!("{:?}", result);
+
+        let failure = result.failures.as_ref().and_then(|failures| failures.first()).map(|f| f.to_owned());
+        match result.tasks.as_ref().and_then(|tasks| tasks.first()) {
+            Some(task) => {
+                Ok(TaskDescription {
+                    task: Some(task.to_owned()),
+                    failure: failure,
+                })
+            }
+            None => Err(Box::new(CommandError::Unknown))
+        }
     }
 
     fn detect_task_definition_changes(

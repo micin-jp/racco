@@ -7,10 +7,10 @@ use racco::config;
 fn run_task() {
 
   let conf = config::command::Config::from_file("fixtures/configs/run_task.yml", None).unwrap();
-  let cmd = run_task::Command::new(&conf, "racco-test-job");
+  let cmd = run_task::Command::new(&conf, "racco-test-job", false);
 
   let res = cmd.run();
   assert!(res.is_ok());
 
-  // TODO: assert container logs 
+  // TODO: assert container logs
 }

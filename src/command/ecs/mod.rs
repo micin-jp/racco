@@ -1,3 +1,3 @@
 mod executer;
 
-pub use self::executer::Executer;
+pub use self::executer::{Executer, TaskDescription};
