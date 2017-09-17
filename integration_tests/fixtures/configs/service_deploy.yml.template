@@ -1,4 +1,4 @@
-deploy:
+service:
   - name: racco-test-web
     cluster: 'racco-test-cluster'
     service:
