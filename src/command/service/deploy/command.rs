@@ -35,16 +35,16 @@ impl<'c> Command<'c> {
     pub fn run(&self) -> Result<(), Box<error::Error>> {
         trace!("command::service::deploy::Command::run");
 
-        if let Some(deploy_config_group) = self.config.deploy.as_ref() {
-            for deploy_config in deploy_config_group {
-                if self.name != deploy_config.name {
+        if let Some(service_config_group) = self.config.service.as_ref() {
+            for service_config in service_config_group {
+                if self.name != service_config.name {
                     continue;
                 }
 
                 let options = ExecuterOptions {
                     no_wait: self.no_wait,
                 };
-                let ecs_deploy_cmd = Executer::from_config(&deploy_config, &options);
+                let ecs_deploy_cmd = Executer::from_config(&service_config, &options);
                 try!(ecs_deploy_cmd.run());
             }
         }

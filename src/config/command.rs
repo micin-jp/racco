@@ -39,7 +39,7 @@ impl error::Error for ConfigError {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
-    pub deploy: Option<DeployConfigGroup>,
+    pub service: Option<ServiceConfigGroup>,
     pub run_task: Option<RunTaskConfigGroup>,
     pub schedule_task: Option<ScheduleTaskConfigGroup>,
     pub params: Option<ParamsConfig>,
@@ -78,10 +78,10 @@ impl Config {
     }
 }
 
-pub type DeployConfigGroup = Vec<DeployConfig>;
+pub type ServiceConfigGroup = Vec<ServiceConfig>;
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct DeployConfig {
+pub struct ServiceConfig {
     pub name: String,
     pub cluster: String,
     pub service: ecs::Service,

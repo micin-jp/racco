@@ -19,13 +19,13 @@ pub struct ExecuterOptions {
 
 pub struct Executer<'c> {
     ecs_client: EcsClient<DefaultCredentialsProvider, hyper::client::Client>,
-    config: &'c config::command::DeployConfig,
+    config: &'c config::command::ServiceConfig,
     options: &'c ExecuterOptions,
 }
 
 impl<'c> Executer<'c> {
     pub fn from_config(
-        config: &'c config::command::DeployConfig,
+        config: &'c config::command::ServiceConfig,
         options: &'c ExecuterOptions,
     ) -> Self {
         trace!("command::service::deploy::Executer::from_config");
