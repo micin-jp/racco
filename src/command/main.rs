@@ -65,6 +65,14 @@ impl MainCommand {
                     .takes_value(true),
             )
             .arg(
+                Arg::with_name("CONFIG_TEMPLATE_VARIABLE_FILE")
+                    .short("t")
+                    .long("config-template-var-file")
+                    .value_name("FILENAME")
+                    .help("A File defines variables rendered in config template")
+                    .takes_value(true)
+            )
+            .arg(
                 Arg::with_name("CONFIG_TEMPLATE_VARIABLES")
                     .short("a")
                     .long("config-template-vars")
@@ -197,9 +205,12 @@ impl MainCommand {
 
         let template_variables = MainCommand::parse_args_template_variables(&matches);
 
+        let template_variable_file = matches.value_of("CONFIG_TEMPLATE_VARIABLE_FILE");
+
         match config::command::Config::from_file(
             config_file.as_str(),
             template_variables.as_ref(),
+            template_variable_file,
         ) {
             Err(error) => {
                 output::PrintLine::error(&format!("Failed loading the configuration: {}", error));

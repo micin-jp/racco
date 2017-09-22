@@ -6,6 +6,7 @@ use std::io::prelude::*;
 
 use handlebars::Handlebars;
 use serde_yaml;
+use serde_json;
 
 use super::ecs;
 use super::cloudwatch_events;
@@ -49,6 +50,7 @@ impl Config {
     pub fn from_file(
         file_name: &str,
         template_variables: Option<&BTreeMap<String, String>>,
+        template_variable_file: Option<&str>,
     ) -> Result<Config, Box<error::Error>> {
         debug!("Config::from_file");
 
@@ -57,10 +59,12 @@ impl Config {
 
         try!(file.read_to_string(&mut contents));
 
+        if let Some(tmpl_var_file) = template_variable_file {
+            contents = try!(Config::apply_var_file(contents, tmpl_var_file));
+        }
+
         if let Some(tmpl_vars) = template_variables {
-            let handlebars = Handlebars::new();
-            contents = try!(handlebars.template_render(&contents, tmpl_vars));
-            debug!("Config::from_file - Render template");
+            contents = try!(Config::apply_vars(contents, tmpl_vars));
         }
 
         debug!("Config::from_file - Yaml file: {}", contents);
@@ -75,6 +79,31 @@ impl Config {
             }
             Err(e) => Err(Box::new(ConfigError::ParseError(e))),
         }
+    }
+
+    fn apply_vars(
+        mut contents: String,
+        template_variables: &BTreeMap<String, String>,
+    ) -> Result<String, Box<error::Error>> {
+        let handlebars = Handlebars::new();
+        contents = try!(handlebars.template_render(&contents, template_variables));
+        Ok(contents)
+    }
+
+    fn apply_var_file(
+        mut contents: String,
+        template_variable_file: &str,
+    ) -> Result<String, Box<error::Error>> {
+        let mut var_file = try!(File::open(template_variable_file));
+        let mut var_contents = String::new();
+
+        try!(var_file.read_to_string(&mut var_contents));
+
+        let vars = try!(serde_yaml::from_str::<serde_json::Value>(&var_contents));
+        let handlebars = Handlebars::new();
+        contents = try!(handlebars.template_render(&contents, &vars));
+
+        Ok(contents)
     }
 }
 
