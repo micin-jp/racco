@@ -18,9 +18,39 @@ pub struct TaskDefinition {
     pub container_definitions: ContainerDefinitions,
     pub task_role_arn: Option<String>,
     pub network_mode: Option<NetworkMode>,
+    pub volumes: Option<Vec<Volume>>,
 }
 
 pub type NetworkMode = String;
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct Volume {
+    pub host: Option<HostVolumeProperties>,
+    pub name: Option<String>,
+}
+impl Volume {
+    pub fn to_rusoto(&self) -> rusoto_ecs::Volume {
+        rusoto_ecs::Volume {
+            host: self.host.as_ref().map(|e| e.to_rusoto()),
+            name: self.name.to_owned(),
+        }
+    }
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct HostVolumeProperties {
+    pub source_path: Option<String>,
+}
+
+impl HostVolumeProperties {
+    pub fn to_rusoto(&self) -> rusoto_ecs::HostVolumeProperties {
+        rusoto_ecs::HostVolumeProperties {
+            source_path: self.source_path.to_owned(),
+        }
+    }
+}
+
+
 
 // rusoto compatible structs
 
@@ -99,35 +129,35 @@ impl ContainerDefinition {
             docker_labels: self.docker_labels.to_owned(),
             docker_security_options: self.docker_security_options.to_owned(),
             entry_point: self.entry_point.to_owned(),
-            environment: self.environment.as_ref().map(|e| {
-                e.iter().map(|e0| e0.to_rusoto()).collect()
-            }),
+            environment: self.environment
+                .as_ref()
+                .map(|e| e.iter().map(|e0| e0.to_rusoto()).collect()),
             essential: self.essential,
-            extra_hosts: self.extra_hosts.as_ref().map(|e| {
-                e.iter().map(|e0| e0.to_rusoto()).collect()
-            }),
+            extra_hosts: self.extra_hosts
+                .as_ref()
+                .map(|e| e.iter().map(|e0| e0.to_rusoto()).collect()),
             hostname: self.hostname.to_owned(),
             image: self.image.to_owned(),
             links: self.links.to_owned(),
             log_configuration: self.log_configuration.as_ref().map(|e| e.to_rusoto()),
             memory: self.memory,
             memory_reservation: self.memory_reservation,
-            mount_points: self.mount_points.as_ref().map(|e| {
-                e.iter().map(|e0| e0.to_rusoto()).collect()
-            }),
+            mount_points: self.mount_points
+                .as_ref()
+                .map(|e| e.iter().map(|e0| e0.to_rusoto()).collect()),
             name: self.name.to_owned(),
-            port_mappings: self.port_mappings.as_ref().map(|e| {
-                e.iter().map(|e0| e0.to_rusoto()).collect()
-            }),
+            port_mappings: self.port_mappings
+                .as_ref()
+                .map(|e| e.iter().map(|e0| e0.to_rusoto()).collect()),
             privileged: self.privileged,
             readonly_root_filesystem: self.readonly_root_filesystem,
-            ulimits: self.ulimits.as_ref().map(|e| {
-                e.iter().map(|e0| e0.to_rusoto()).collect()
-            }),
+            ulimits: self.ulimits
+                .as_ref()
+                .map(|e| e.iter().map(|e0| e0.to_rusoto()).collect()),
             user: self.user.to_owned(),
-            volumes_from: self.volumes_from.as_ref().map(|e| {
-                e.iter().map(|e0| e0.to_rusoto()).collect()
-            }),
+            volumes_from: self.volumes_from
+                .as_ref()
+                .map(|e| e.iter().map(|e0| e0.to_rusoto()).collect()),
             working_directory: self.working_directory.to_owned(),
         }
     }

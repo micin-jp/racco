@@ -73,6 +73,12 @@ pub trait Executer {
             family: task_definition_conf.family.to_owned(),
             task_role_arn: task_definition_conf.task_role_arn.to_owned(),
             network_mode: task_definition_conf.network_mode.to_owned(),
+            volumes: task_definition_conf.volumes.as_ref().map(|volumes| {
+                volumes
+                .iter()
+                .map(|v| v.to_rusoto())
+                .collect()
+            }),
             container_definitions: task_definition_conf
                 .container_definitions
                 .iter()
