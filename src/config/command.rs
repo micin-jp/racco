@@ -48,28 +48,26 @@ pub struct Config {
 
 impl Config {
     pub fn from_file(
-        file_name: &str,
-        template_variables: Option<&BTreeMap<String, String>>,
+        file: &str,
+        template_variable_map: Option<&BTreeMap<String, String>>,
         template_variable_file: Option<&str>,
     ) -> Result<Config, Box<error::Error>> {
         debug!("Config::from_file");
 
-        let mut file = try!(File::open(file_name));
-        let mut contents = String::new();
+        let contents = try!(Self::load_file(&file));
+        let tmpl_vars = try!(Self::load_template_variables(
+            template_variable_map,
+            template_variable_file
+        ));
 
-        try!(file.read_to_string(&mut contents));
+        Self::new(&contents, &tmpl_vars)
+    }
 
-        if let Some(tmpl_var_file) = template_variable_file {
-            contents = try!(Config::apply_var_file(contents, tmpl_var_file));
-        }
+    fn new(contents: &str, tmpl_vars: &serde_json::Value) -> Result<Config, Box<error::Error>> {
+        let rendered_contents = try!(Self::apply_template_vars(contents, tmpl_vars));
+        debug!("Config::from_file - Yaml file: {}", rendered_contents);
 
-        if let Some(tmpl_vars) = template_variables {
-            contents = try!(Config::apply_vars(contents, tmpl_vars));
-        }
-
-        debug!("Config::from_file - Yaml file: {}", contents);
-
-        match serde_yaml::from_str::<Config>(&contents) {
+        match serde_yaml::from_str::<Config>(&rendered_contents) {
             Ok(c) => {
                 debug!(
                     "Config::from_file - Serialize reversely: {}",
@@ -81,29 +79,49 @@ impl Config {
         }
     }
 
-    fn apply_vars(
-        mut contents: String,
-        template_variables: &BTreeMap<String, String>,
-    ) -> Result<String, Box<error::Error>> {
-        let handlebars = Handlebars::new();
-        contents = try!(handlebars.template_render(&contents, template_variables));
+    fn load_file(file: &str) -> Result<String, Box<error::Error>> {
+        let mut f = try!(File::open(file));
+        let mut contents = String::new();
+
+        try!(f.read_to_string(&mut contents));
+
         Ok(contents)
     }
 
-    fn apply_var_file(
-        mut contents: String,
-        template_variable_file: &str,
+    fn load_template_variables(
+        template_variable_map: Option<&BTreeMap<String, String>>,
+        template_variable_file: Option<&str>,
+    ) -> Result<serde_json::Value, Box<error::Error>> {
+
+        let mut vars = match template_variable_file {
+            Some(tmpl_var_file) => {
+                let mut var_file = try!(File::open(tmpl_var_file));
+                let mut var_contents = String::new();
+
+                try!(var_file.read_to_string(&mut var_contents));
+
+                try!(serde_yaml::from_str::<serde_json::Value>(&var_contents))
+            }
+            None => json!({}),
+        };
+
+        if let Some(tmpl_vars) = template_variable_map {
+            for (k, v) in tmpl_vars {
+                let jv: serde_json::Value = v.as_str().into();
+                vars[k] = jv;
+            }
+        }
+
+        Ok(vars)
+    }
+
+    fn apply_template_vars(
+        contents: &str,
+        vars: &serde_json::Value,
     ) -> Result<String, Box<error::Error>> {
-        let mut var_file = try!(File::open(template_variable_file));
-        let mut var_contents = String::new();
-
-        try!(var_file.read_to_string(&mut var_contents));
-
-        let vars = try!(serde_yaml::from_str::<serde_json::Value>(&var_contents));
         let handlebars = Handlebars::new();
-        contents = try!(handlebars.template_render(&contents, &vars));
-
-        Ok(contents)
+        let rendered = try!(handlebars.template_render(contents, vars));
+        Ok(rendered)
     }
 }
 
