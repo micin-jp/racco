@@ -164,3 +164,113 @@ pub struct ParamsConfig {
 pub struct ParamsSecure {
     pub key: String,
 }
+
+
+#[test]
+fn test_apply_template_vars() {
+    let tmpl = "foo: {{ bar }}";
+    let vars = json!({"bar": "baz"});
+    let ret = Config::apply_template_vars(tmpl, &vars);
+    assert!(match ret {
+        Ok(rendered) => match rendered.as_ref() {
+            "foo: baz" => true,
+            _ => false
+        },
+        _ => false
+    });
+    //assert_eq!(ret.unwrap(), String::from("foo: baz"));
+}
+
+#[test]
+fn test_service_config() {
+    let tmpl = r"service:
+  - name: test
+    cluster: test-cluster
+    service:
+      name: test
+      desired_count: 1
+      task_definition:
+        family: test
+        container_definitions:
+          - name: test
+            image: 'test.dkr.com/racco/test:latest'
+";
+    let vars = json!({});
+
+    let ret = Config::new(tmpl, &vars);
+    assert!(match ret {
+        Ok(config) => match config.service {
+            Some(service_group) => service_group.len() == 1,
+            _ => false
+        },
+        _ => false
+    });
+}
+
+#[test]
+fn test_run_task_config() {
+    let tmpl = r"run_task:
+  - name: test
+    cluster: test-cluster
+    task_definition:
+      family: test
+      container_definitions:
+        - name: test
+          image: 'test.dkr.com/racco/test:latest'
+";
+    let vars = json!({});
+
+    let ret = Config::new(tmpl, &vars);
+    assert!(match ret {
+        Ok(config) => match config.run_task {
+            Some(run_task_group) => run_task_group.len() == 1,
+            _ => false
+        },
+        _ => false
+    });
+}
+
+#[test]
+fn test_schedule_task_config() {
+    let tmpl = r"schedule_task:
+  - name: test
+    cluster: test-cluster
+    task_definition:
+      family: test
+      container_definitions:
+        - name: test
+          image: 'test.dkr.com/racco/test:latest'
+    rule:
+      name: test-schedule-rule
+      schedule_expression: 'cron(0/5 * * * ? *)'
+";
+    let vars = json!({});
+
+    let ret = Config::new(tmpl, &vars);
+    assert!(match ret {
+        Ok(config) => match config.schedule_task {
+            Some(schedule_task_group) => schedule_task_group.len() == 1,
+            _ => false
+        },
+        _ => false
+    });
+}
+
+#[test]
+fn test_params_config() {
+    let tmpl = r"params:
+  path: test0/test1
+  secure:
+    key: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+";
+    let vars = json!({});
+
+    let ret = Config::new(tmpl, &vars);
+    assert!(match ret {
+        Ok(config) => match config.params {
+            Some(_params) => true,
+            _ => false
+        },
+        _ => false
+    });
+}
