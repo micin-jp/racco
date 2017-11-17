@@ -13,6 +13,7 @@ use super::service;
 use super::run_task;
 use super::schedule_task;
 use super::params;
+use super::configtest;
 
 pub struct MainCommand {}
 
@@ -81,6 +82,10 @@ impl MainCommand {
                     .takes_value(true)
                     .multiple(true)
                     .validator(MainCommand::validate_args_template_variables),
+            )
+            .subcommand(
+                SubCommand::with_name("config")
+                    .about("Display loaded config")
             )
             .subcommand(
                 SubCommand::with_name("service")
@@ -218,7 +223,7 @@ impl MainCommand {
             }
             Ok(config) => {
 
-                // deploy
+                // service
                 if let Some(sub0_matches) = matches.subcommand_matches("service") {
                     if let Some(sub1_matches) = sub0_matches.subcommand_matches("deploy") {
 
@@ -238,6 +243,26 @@ impl MainCommand {
                             }
                         }
 
+                    }
+                }
+
+                // config
+                if let Some(sub0_matches) = matches.subcommand_matches("config") {
+
+                    info!("start config");
+
+                    let cmd = configtest::Command::from_args(&config, sub0_matches);
+                    match cmd.run() {
+                        Ok(_) => {
+                            info!("end config");
+                            return Ok(())
+                        }
+                        Err(error) => {
+                            output::PrintLine::error(
+                                &format!("Failed display config: {}", error),
+                            );
+                            return Err(error)
+                        }
                     }
                 }
 
