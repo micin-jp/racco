@@ -8,18 +8,25 @@ use handlebars::Handlebars;
 use serde_yaml;
 use serde_json;
 
+use semver::{Version, VersionReq};
+
 use super::ecs;
 use super::cloudwatch_events;
 
 #[derive(Debug)]
 pub enum ConfigError {
     ParseError(serde_yaml::Error),
+    VersionRequirementError,
 }
 
 impl fmt::Display for ConfigError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             ConfigError::ParseError(ref yaml_err) => write!(f, "Parse Error: {}", yaml_err),
+            ConfigError::VersionRequirementError => write!(
+                f,
+                "The specified version does not satisfy the current racco version"
+            ),
         }
     }
 }
@@ -28,18 +35,23 @@ impl error::Error for ConfigError {
     fn description(&self) -> &str {
         match *self {
             ConfigError::ParseError(ref yaml_err) => yaml_err.description(),
+            ConfigError::VersionRequirementError => {
+                "The specified version does not satisfy the current racco version"
+            }
         }
     }
 
     fn cause(&self) -> Option<&error::Error> {
         match *self {
             ConfigError::ParseError(ref yaml_err) => Some(yaml_err),
+            ConfigError::VersionRequirementError => None,
         }
     }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
+    pub version: Option<String>,
     pub service: Option<ServiceConfigGroup>,
     pub run_task: Option<RunTaskConfigGroup>,
     pub schedule_task: Option<ScheduleTaskConfigGroup>,
@@ -60,7 +72,10 @@ impl Config {
             template_variable_file
         ));
 
-        Self::new(&contents, &tmpl_vars)
+        let config = try!(Self::new(&contents, &tmpl_vars));
+        let current_ver_str: &str = env!("CARGO_PKG_VERSION");
+        try!(config.validate_version(current_ver_str));
+        Ok(config)
     }
 
     fn new(contents: &str, tmpl_vars: &serde_json::Value) -> Result<Config, Box<error::Error>> {
@@ -92,7 +107,6 @@ impl Config {
         template_variable_map: Option<&BTreeMap<String, String>>,
         template_variable_file: Option<&str>,
     ) -> Result<serde_json::Value, Box<error::Error>> {
-
         let mut vars = match template_variable_file {
             Some(tmpl_var_file) => {
                 let mut var_file = try!(File::open(tmpl_var_file));
@@ -122,6 +136,21 @@ impl Config {
         let handlebars = Handlebars::new();
         let rendered = try!(handlebars.template_render(contents, vars));
         Ok(rendered)
+    }
+
+    fn validate_version(&self, current_ver_str: &str) -> Result<(), Box<error::Error>> {
+        if self.version.is_none() {
+            return Ok(());
+        }
+
+        let current_ver = try!(Version::parse(current_ver_str));
+        let version_req = try!(VersionReq::parse(self.version.as_ref().unwrap().as_str()));
+
+        if version_req.matches(&current_ver) {
+            Ok(())
+        } else {
+            Err(Box::new(ConfigError::VersionRequirementError))
+        }
     }
 }
 
@@ -174,9 +203,9 @@ fn test_apply_template_vars() {
     assert!(match ret {
         Ok(rendered) => match rendered.as_ref() {
             "foo: baz" => true,
-            _ => false
+            _ => false,
         },
-        _ => false
+        _ => false,
     });
     //assert_eq!(ret.unwrap(), String::from("foo: baz"));
 }
@@ -201,9 +230,9 @@ fn test_service_config() {
     assert!(match ret {
         Ok(config) => match config.service {
             Some(service_group) => service_group.len() == 1,
-            _ => false
+            _ => false,
         },
-        _ => false
+        _ => false,
     });
 }
 
@@ -224,9 +253,9 @@ fn test_run_task_config() {
     assert!(match ret {
         Ok(config) => match config.run_task {
             Some(run_task_group) => run_task_group.len() == 1,
-            _ => false
+            _ => false,
         },
-        _ => false
+        _ => false,
     });
 }
 
@@ -250,9 +279,9 @@ fn test_schedule_task_config() {
     assert!(match ret {
         Ok(config) => match config.schedule_task {
             Some(schedule_task_group) => schedule_task_group.len() == 1,
-            _ => false
+            _ => false,
         },
-        _ => false
+        _ => false,
     });
 }
 
@@ -269,8 +298,53 @@ fn test_params_config() {
     assert!(match ret {
         Ok(config) => match config.params {
             Some(_params) => true,
-            _ => false
+            _ => false,
         },
-        _ => false
+        _ => false,
+    });
+}
+
+#[test]
+fn test_version_requirement_satisfied() {
+    let tmpl = r"version: ~0.1.0
+";
+    let vars = json!({});
+    let ret = Config::new(tmpl, &vars);
+    assert!(match ret {
+        Ok(config) => match config.validate_version("0.1.1") {
+            Ok(()) => true,
+            _ => false,
+        },
+        _ => false,
+    });
+}
+
+#[test]
+fn test_version_requirement_not_satisfied_greater() {
+    let tmpl = r"version: ~0.1.0
+";
+    let vars = json!({});
+    let ret = Config::new(tmpl, &vars);
+    assert!(match ret {
+        Ok(config) => match config.validate_version("0.2.0") {
+            Err(_e) => true,
+            _ => false,
+        },
+        _ => false,
+    });
+}
+
+#[test]
+fn test_version_requirement_not_satisfied_less() {
+    let tmpl = r"version: ~0.1.0
+";
+    let vars = json!({});
+    let ret = Config::new(tmpl, &vars);
+    assert!(match ret {
+        Ok(config) => match config.validate_version("0.0.9") {
+            Err(_e) => true,
+            _ => false,
+        },
+        _ => false,
     });
 }
