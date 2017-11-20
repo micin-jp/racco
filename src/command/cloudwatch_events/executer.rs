@@ -14,10 +14,27 @@ pub trait Executer {
         &self,
     ) -> &CloudWatchEventsClient<DefaultCredentialsProvider, hyper::client::Client>;
 
+
+    fn rule_exists(&self, rule_name: &str) -> Result<bool, Box<error::Error>> {
+        trace!("command::cloudwatch_events::Executer::rule_exists");
+
+        let req = rusoto_events::DescribeRuleRequest {
+            name: rule_name.to_owned(),
+        };
+
+        match self.events_client().describe_rule(&req) {
+            Ok(res) => Ok(res.arn.is_some()),
+            Err(rusoto_events::DescribeRuleError::ResourceNotFound(_)) => Ok(false),
+            Err(e) => Err(Box::new(e)),
+        }
+    }
+
     fn delete_rule(&self, rule_name: &str) -> Result<(), Box<error::Error>> {
         trace!("command::cloudwatch_events::Executer::delete_rule");
 
-        let req = rusoto_events::DeleteRuleRequest { name: rule_name.to_owned() };
+        let req = rusoto_events::DeleteRuleRequest {
+            name: rule_name.to_owned(),
+        };
 
         try!(self.events_client().delete_rule(&req));
         info!("Completed to delete-rule successfully");
@@ -73,6 +90,27 @@ pub trait Executer {
 
         try!(self.events_client().put_targets(&req));
         info!("Completed to put-targets successfully");
+
+        Ok(())
+    }
+
+    fn remove_targets(&self, rule_name: &str) -> Result<(), Box<error::Error>> {
+        trace!("command::cloudwatch_events::Executer::remove_targets");
+
+        let req = rusoto_events::ListTargetsByRuleRequest {
+            rule: rule_name.to_owned(),
+            ..Default::default()
+        };
+
+        let res = try!(self.events_client().list_targets_by_rule(&req));
+        if let Some(targets) = res.targets {
+            let req = rusoto_events::RemoveTargetsRequest {
+                rule: rule_name.to_owned(),
+                ids: targets.iter().map(|t| t.id.to_owned()).collect(),
+                ..Default::default()
+            };
+            try!(self.events_client().remove_targets(&req));
+        }
 
         Ok(())
     }
