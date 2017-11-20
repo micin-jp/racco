@@ -109,6 +109,26 @@ impl MainCommand {
                                     .help("Do not wait until new tasks to be running")
                                     .long("no-wait")
                             ),
+                    )
+                    .subcommand(
+                        SubCommand::with_name("stop")
+                            .about("Stops ECS service (change desired count to zero)")
+                            .arg(
+                                Arg::with_name("NAME")
+                                    .help("Name of the entry in config")
+                                    .required_unless("ALL")
+                                    .index(1),
+                            )
+                            .arg(
+                                Arg::with_name("ALL")
+                                    .help("Stop all services")
+                                    .long("all")
+                            )
+                            .arg(
+                                Arg::with_name("NO_WAIT")
+                                    .help("Do not wait until new tasks to be stopped")
+                                    .long("no-wait")
+                            ),
                     ),
             )
             .subcommand(
@@ -253,6 +273,26 @@ impl MainCommand {
                             Err(error) => {
                                 output::PrintLine::error(
                                     &format!("Failed deploying the service: {}", error),
+                                );
+                                return Err(error)
+                            }
+                        }
+
+                    }
+
+                    if let Some(sub1_matches) = sub0_matches.subcommand_matches("stop") {
+
+                        info!("start stopping service");
+
+                        let cmd = service::stop::Command::from_args(&config, sub1_matches);
+                        match cmd.run() {
+                            Ok(_) => {
+                                info!("end stopping service");
+                                return Ok(())
+                            }
+                            Err(error) => {
+                                output::PrintLine::error(
+                                    &format!("Failed stopping the service: {}", error),
                                 );
                                 return Err(error)
                             }

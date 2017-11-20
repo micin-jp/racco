@@ -12,7 +12,7 @@ pub struct Service {
 }
 
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TaskDefinition {
     pub family: String,
     pub container_definitions: ContainerDefinitions,
