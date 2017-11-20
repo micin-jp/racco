@@ -1,10 +1,7 @@
 use std::error;
-use std::time::Duration;
-use std::thread::sleep;
 
 use hyper;
 use rusoto_core::{default_tls_client, DefaultCredentialsProvider, Region};
-use rusoto_ecs;
 use rusoto_ecs::EcsClient;
 
 use config;
@@ -17,6 +14,7 @@ pub struct ExecuterOptions {
     pub no_wait: bool,
 }
 
+#[allow(dead_code)]
 pub struct Executer<'c> {
     ecs_client: EcsClient<DefaultCredentialsProvider, hyper::client::Client>,
     config: &'c config::command::ServiceConfig,
