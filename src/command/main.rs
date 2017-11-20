@@ -96,8 +96,13 @@ impl MainCommand {
                             .arg(
                                 Arg::with_name("NAME")
                                     .help("Name of the entry in config")
-                                    .required(true)
+                                    .required_unless("ALL")
                                     .index(1),
+                            )
+                            .arg(
+                                Arg::with_name("ALL")
+                                    .help("Deploy all services")
+                                    .long("all")
                             )
                             .arg(
                                 Arg::with_name("NO_WAIT")
@@ -130,8 +135,13 @@ impl MainCommand {
                             .arg(
                                 Arg::with_name("NAME")
                                     .help("Name of the entry in config")
-                                    .required(true)
+                                    .required_unless("ALL")
                                     .index(1),
+                            )
+                            .arg(
+                                Arg::with_name("ALL")
+                                    .help("Put all schedule tasks")
+                                    .long("all")
                             ),
                     )
                     .subcommand(
@@ -140,8 +150,13 @@ impl MainCommand {
                             .arg(
                                 Arg::with_name("NAME")
                                     .help("Name of the entry in config")
-                                    .required(true)
+                                    .required_unless("ALL")
                                     .index(1),
+                            )
+                            .arg(
+                                Arg::with_name("ALL")
+                                    .help("Delete all schedule tasks")
+                                    .long("all")
                             ),
                     ),
             )

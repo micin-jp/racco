@@ -5,11 +5,11 @@ use racco::config;
 
 #[test]
 fn service_deploy() {
+  let conf =
+    config::command::Config::from_file("fixtures/configs/service_deploy.yml", None).unwrap();
+  let cmd = service::deploy::Command::new(&conf, Some("racco-test-web"), false, false);
 
-  let conf = config::command::Config::from_file("fixtures/configs/service_deploy.yml", None).unwrap();
-  let cmd = service::deploy::Command::new(&conf, "racco-test-web", false);
-
-  // first time 
+  // first time
   let res1 = cmd.run();
   assert!(res1.is_ok());
 
@@ -19,4 +19,3 @@ fn service_deploy() {
 
   // TODO: assert http response from nginx container
 }
-
