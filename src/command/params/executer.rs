@@ -50,21 +50,41 @@ pub trait Executer {
         }
     }
 
-    fn params(&self) -> Result<Option<Vec<rusoto_ssm::Parameter>>, Box<error::Error>> {
+    fn params(&self) -> Result<Vec<rusoto_ssm::Parameter>, Box<error::Error>> {
         trace!("command::params::Executer::params");
         let path = self.path(false);
         let with_decription = self.config().secure.is_some();
 
         let req = rusoto_ssm::GetParametersByPathRequest {
-            path: path,
+            path: path.to_owned(),
             with_decryption: Some(with_decription),
             ..Default::default()
         };
 
         let client = self.client();
-        let res = try!(client.get_parameters_by_path(&req));
-        info!("get parameters-by-path successfully");
+        let mut res = try!(client.get_parameters_by_path(&req));
 
-        Ok(res.parameters)
+        let mut params: Vec<rusoto_ssm::Parameter> = Vec::new();
+        if let Some(new_params) = res.parameters {
+            params.extend(new_params.into_iter());
+        }
+
+        // get next set
+        while let Some(next_token) = res.next_token {
+            let req = rusoto_ssm::GetParametersByPathRequest {
+                path: path.to_owned(),
+                with_decryption: Some(with_decription),
+                next_token: Some(next_token),
+                ..Default::default()
+            };
+            res = try!(client.get_parameters_by_path(&req));
+
+            if let Some(new_params) = res.parameters {
+                params.extend(new_params.into_iter());
+            }
+        }
+
+        info!("get parameters-by-path successfully");
+        Ok(params)
     }
 }

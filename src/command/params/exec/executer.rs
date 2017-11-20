@@ -3,7 +3,7 @@ use std::process;
 
 use config;
 
-use super::{Program, Arguments};
+use super::{Arguments, Program};
 use super::super::Executer as ParamsExecuter;
 
 pub struct Executer<'c> {
@@ -25,19 +25,16 @@ impl<'c> Executer<'c> {
         trace!("command::params::exec::Executer::run");
 
         info!("exec: {} {}", program, args.join(" "));
-        let maybe_params = try!(self.params());
+        let params = try!(self.params());
         let mut cmd = process::Command::new(program);
 
         cmd.args(args);
 
-        if let Some(params) = maybe_params {
-            for param in params.iter() {
-                if let (Some(name_with_path), Some(value)) =
-                    (param.name.as_ref(), param.value.as_ref())
-                {
-                    if let Ok(name) = self.strip_path(name_with_path) {
-                        cmd.env(name, value);
-                    }
+        for param in params.iter() {
+            if let (Some(name_with_path), Some(value)) = (param.name.as_ref(), param.value.as_ref())
+            {
+                if let Ok(name) = self.strip_path(name_with_path) {
+                    cmd.env(name, value);
                 }
             }
         }

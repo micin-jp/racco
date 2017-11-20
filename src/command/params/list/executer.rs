@@ -22,11 +22,8 @@ impl<'c> Executer<'c> {
     pub fn run(&self) -> Result<(), Box<error::Error>> {
         trace!("command::params::list::Executer::run");
 
-        let maybe_params = try!(self.params());
-
-        if let Some(params) = maybe_params {
-            try!(self.print(&params));
-        }
+        let params = try!(self.params());
+        try!(self.print(&params));
 
         Ok(())
     }
