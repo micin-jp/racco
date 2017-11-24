@@ -2,6 +2,8 @@ use std::error;
 use std::process;
 
 use config;
+use output;
+use command::error::CommandError;
 
 use super::{Arguments, Program};
 use super::super::Executer as ParamsExecuter;
@@ -41,9 +43,17 @@ impl<'c> Executer<'c> {
 
         // TODO: Handle signals
         let mut child = try!(cmd.spawn());
-        let _output = try!(child.wait());
+        let output = try!(child.wait());
 
-        Ok(())
+        if output.success() {
+            Ok(())
+        } else {
+            output::PrintLine::error(&format!(
+                "Command exit with status code: {}",
+                output.code().unwrap_or(0)
+            ));
+            Err(Box::new(CommandError::Unknown))
+        }
     }
 }
 
