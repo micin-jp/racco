@@ -71,7 +71,6 @@ impl<'c> Executer<'c> {
         trace!("command::run-task::Executer::wait_for_stopped");
 
         fn check_stopped(current_task: &TaskDescription) -> Result<bool, Box<error::Error>> {
-
             if let Some(failure) = current_task.failure.as_ref() {
                 let reason = failure.reason.as_ref().map(String::as_str).unwrap_or("");
                 output::PrintLine::error(&format!("Finished task with error :{}", reason));
@@ -90,12 +89,22 @@ impl<'c> Executer<'c> {
                             .ok_or(Box::new(CommandError::Unknown))
                     );
                     if status == "STOPPED" {
+                        if let Some(reason) = task.stopped_reason.as_ref() {
+                            if reason != "Essential container in task exited" {
+                                output::PrintLine::error(
+                                    &format!("The task stopped with reason: {}", reason),
+                                );
+                                return Err(Box::new(CommandError::Unknown));
+                            }
+                        }
+
                         let essential_container = try!(
                             task.containers
                                 .as_ref()
                                 .and_then(|c| c.first())
                                 .ok_or(Box::new(CommandError::Unknown))
                         );
+
                         match essential_container.exit_code {
                             Some(0) => return Ok(true), // stopped task successfully!
                             Some(code) => {
