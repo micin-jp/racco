@@ -1,12 +1,12 @@
-use std::error;
 use std::default::Default;
+use std::error;
 
 use rusoto_ssm;
 use rusoto_ssm::Ssm;
 
+use super::super::Executer as ParamsExecuter;
 use config;
 use output;
-use super::super::Executer as ParamsExecuter;
 
 pub struct Executer<'c> {
     config: &'c config::command::ParamsConfig,
@@ -28,7 +28,7 @@ impl<'c> Executer<'c> {
         };
 
         let client = self.client();
-        try!(client.delete_parameter(&req));
+        try!(client.delete_parameter(req).sync());
 
         output::PrintLine::success("Finished deleting the parameter");
         Ok(())
@@ -36,5 +36,7 @@ impl<'c> Executer<'c> {
 }
 
 impl<'c> ParamsExecuter for Executer<'c> {
-    fn config(&self) -> &config::command::ParamsConfig { &self.config }
+    fn config(&self) -> &config::command::ParamsConfig {
+        &self.config
+    }
 }

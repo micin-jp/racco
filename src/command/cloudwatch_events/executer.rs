@@ -1,19 +1,13 @@
-use std::error;
 use std::default::Default;
+use std::error;
 
-use hyper;
-use rusoto_core::DefaultCredentialsProvider;
 use rusoto_events;
 use rusoto_events::{CloudWatchEvents, CloudWatchEventsClient};
 
 use config;
 
-
 pub trait Executer {
-    fn events_client(
-        &self,
-    ) -> &CloudWatchEventsClient<DefaultCredentialsProvider, hyper::client::Client>;
-
+    fn events_client(&self) -> &CloudWatchEventsClient;
 
     fn rule_exists(&self, rule_name: &str) -> Result<bool, Box<error::Error>> {
         trace!("command::cloudwatch_events::Executer::rule_exists");
@@ -22,7 +16,7 @@ pub trait Executer {
             name: rule_name.to_owned(),
         };
 
-        match self.events_client().describe_rule(&req) {
+        match self.events_client().describe_rule(req).sync() {
             Ok(res) => Ok(res.arn.is_some()),
             Err(rusoto_events::DescribeRuleError::ResourceNotFound(_)) => Ok(false),
             Err(e) => Err(Box::new(e)),
@@ -36,7 +30,7 @@ pub trait Executer {
             name: rule_name.to_owned(),
         };
 
-        try!(self.events_client().delete_rule(&req));
+        try!(self.events_client().delete_rule(req).sync());
         info!("Completed to delete-rule successfully");
 
         Ok(())
@@ -54,7 +48,7 @@ pub trait Executer {
             ..Default::default()
         };
 
-        try!(self.events_client().put_rule(&req));
+        try!(self.events_client().put_rule(req).sync());
         info!("Completed to put-rule successfully");
 
         Ok(())
@@ -69,18 +63,16 @@ pub trait Executer {
     ) -> Result<(), Box<error::Error>> {
         trace!("command::cloudwatch_events::Executer::put_ecs_task_target");
 
-        let targets = vec![
-            rusoto_events::Target {
-                id: self.auto_generated_target_id(rule_conf),
-                arn: cluster_arn.to_owned(),
-                ecs_parameters: Some(rusoto_events::EcsParameters {
-                    task_count: Some(1),
-                    task_definition_arn: task_definition_arn.to_owned(),
-                }),
-                role_arn: rule_targets_role_arn.map(str::to_string),
-                ..Default::default()
-            },
-        ];
+        let targets = vec![rusoto_events::Target {
+            id: self.auto_generated_target_id(rule_conf),
+            arn: cluster_arn.to_owned(),
+            ecs_parameters: Some(rusoto_events::EcsParameters {
+                task_count: Some(1),
+                task_definition_arn: task_definition_arn.to_owned(),
+            }),
+            role_arn: rule_targets_role_arn.map(str::to_string),
+            ..Default::default()
+        }];
 
         let req = rusoto_events::PutTargetsRequest {
             rule: rule_conf.name.to_owned(),
@@ -88,7 +80,7 @@ pub trait Executer {
             ..Default::default()
         };
 
-        try!(self.events_client().put_targets(&req));
+        try!(self.events_client().put_targets(req).sync());
         info!("Completed to put-targets successfully");
 
         Ok(())
@@ -102,14 +94,14 @@ pub trait Executer {
             ..Default::default()
         };
 
-        let res = try!(self.events_client().list_targets_by_rule(&req));
+        let res = try!(self.events_client().list_targets_by_rule(req).sync());
         if let Some(targets) = res.targets {
             let req = rusoto_events::RemoveTargetsRequest {
                 rule: rule_name.to_owned(),
                 ids: targets.iter().map(|t| t.id.to_owned()).collect(),
                 ..Default::default()
             };
-            try!(self.events_client().remove_targets(&req));
+            try!(self.events_client().remove_targets(req).sync());
         }
 
         Ok(())

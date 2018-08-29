@@ -1,20 +1,14 @@
-use std::error;
-use hyper;
-use rusoto_core::{default_tls_client, DefaultCredentialsProvider, Region};
+use config;
+use rusoto_core::Region;
 use rusoto_ssm;
 use rusoto_ssm::{Ssm, SsmClient};
-use config;
+use std::error;
 
 use command::error::CommandError;
 
 pub trait Executer {
-    fn client(&self) -> SsmClient<DefaultCredentialsProvider, hyper::client::Client> {
-        let credentials = DefaultCredentialsProvider::new().unwrap();
-        return SsmClient::new(
-            default_tls_client().unwrap(),
-            credentials,
-            Region::ApNortheast1,
-        );
+    fn client(&self) -> SsmClient {
+        return SsmClient::new(Region::ApNortheast1);
     }
 
     fn config(&self) -> &config::command::ParamsConfig;
@@ -62,7 +56,7 @@ pub trait Executer {
         };
 
         let client = self.client();
-        let mut res = try!(client.get_parameters_by_path(&req));
+        let mut res = try!(client.get_parameters_by_path(req).sync());
 
         let mut params: Vec<rusoto_ssm::Parameter> = Vec::new();
         if let Some(new_params) = res.parameters {
@@ -77,7 +71,7 @@ pub trait Executer {
                 next_token: Some(next_token),
                 ..Default::default()
             };
-            res = try!(client.get_parameters_by_path(&req));
+            res = try!(client.get_parameters_by_path(req).sync());
 
             if let Some(new_params) = res.parameters {
                 params.extend(new_params.into_iter());

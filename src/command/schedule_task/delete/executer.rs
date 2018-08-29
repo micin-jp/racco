@@ -1,34 +1,25 @@
 use std::error;
 
-use hyper;
-use rusoto_core::{default_tls_client, DefaultCredentialsProvider, Region};
+use rusoto_core::Region;
 use rusoto_ecs::EcsClient;
 use rusoto_events::CloudWatchEventsClient;
 
 use output;
 
-use command::ecs::Executer as EcsExecuter;
 use command::cloudwatch_events::Executer as CloudwatchEventsExecuter;
+use command::ecs::Executer as EcsExecuter;
 
 pub struct Executer {
-    ecs_client: EcsClient<DefaultCredentialsProvider, hyper::client::Client>,
-    events_client: CloudWatchEventsClient<DefaultCredentialsProvider, hyper::client::Client>,
+    ecs_client: EcsClient,
+    events_client: CloudWatchEventsClient,
 }
 
 impl Executer {
     pub fn new() -> Self {
         trace!("command::schedule_task::delete::Executer::new");
 
-        let ecs_client = EcsClient::new(
-            default_tls_client().unwrap(),
-            DefaultCredentialsProvider::new().unwrap(),
-            Region::ApNortheast1,
-        );
-        let events_client = CloudWatchEventsClient::new(
-            default_tls_client().unwrap(),
-            DefaultCredentialsProvider::new().unwrap(),
-            Region::ApNortheast1,
-        );
+        let ecs_client = EcsClient::new(Region::ApNortheast1);
+        let events_client = CloudWatchEventsClient::new(Region::ApNortheast1);
 
         Executer {
             ecs_client: ecs_client,
@@ -52,15 +43,13 @@ impl Executer {
 }
 
 impl EcsExecuter for Executer {
-    fn ecs_client(&self) -> &EcsClient<DefaultCredentialsProvider, hyper::client::Client> {
+    fn ecs_client(&self) -> &EcsClient {
         &self.ecs_client
     }
 }
 
 impl CloudwatchEventsExecuter for Executer {
-    fn events_client(
-        &self,
-    ) -> &CloudWatchEventsClient<DefaultCredentialsProvider, hyper::client::Client> {
+    fn events_client(&self) -> &CloudWatchEventsClient {
         &self.events_client
     }
 }

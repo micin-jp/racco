@@ -1,24 +1,23 @@
 use std::error;
-use std::time::Duration;
 use std::thread::sleep;
+use std::time::Duration;
 
-use hyper;
-use rusoto_core::{default_tls_client, DefaultCredentialsProvider, Region};
+use rusoto_core::Region;
 use rusoto_ecs;
 use rusoto_ecs::EcsClient;
 
 use config;
 use output;
 
-use command::error::CommandError;
 use command::ecs::Executer as EcsExecuter;
+use command::error::CommandError;
 
 pub struct ExecuterOptions {
     pub no_wait: bool,
 }
 
 pub struct Executer<'c> {
-    ecs_client: EcsClient<DefaultCredentialsProvider, hyper::client::Client>,
+    ecs_client: EcsClient,
     config: &'c config::command::ServiceConfig,
     options: &'c ExecuterOptions,
 }
@@ -30,12 +29,7 @@ impl<'c> Executer<'c> {
     ) -> Self {
         trace!("command::service::deploy::Executer::from_config");
 
-        let credentials = DefaultCredentialsProvider::new().unwrap();
-        let client = EcsClient::new(
-            default_tls_client().unwrap(),
-            credentials,
-            Region::ApNortheast1,
-        );
+        let client = EcsClient::new(Region::ApNortheast1);
         Executer {
             ecs_client: client,
             config: config,
@@ -49,9 +43,8 @@ impl<'c> Executer<'c> {
         let service_conf = &self.config.service;
         let cluster = &self.config.cluster;
 
-        let maybe_latest_task_definition = try!(self.describe_latest_task_definition(
-            &service_conf.task_definition.family,
-        ));
+        let maybe_latest_task_definition =
+            try!(self.describe_latest_task_definition(&service_conf.task_definition.family,));
 
         let task_definition = if let Some(latest_task_definition) = maybe_latest_task_definition {
             if self.detect_task_definition_changes(
@@ -81,20 +74,12 @@ impl<'c> Executer<'c> {
             Some(s) => s,
             None => {
                 output::PrintLine::info("Service has not been exist. Creating...");
-                try!(self.create_service(
-                    cluster,
-                    &service_conf,
-                    &task_definition_arn,
-                ))
+                try!(self.create_service(cluster, &service_conf, &task_definition_arn,))
             }
         };
 
         output::PrintLine::info("Starting to update the service");
-        try!(self.update_service(
-            cluster,
-            &service_conf,
-            &task_definition,
-        ));
+        try!(self.update_service(cluster, &service_conf, &task_definition,));
         output::PrintLine::info("Finished updating the service");
 
         if !self.options.no_wait {
@@ -131,15 +116,13 @@ impl<'c> Executer<'c> {
                     if desired_count == running_count {
                         output::PrintLine::info(&format!(
                             "New tasks are now running. (desired_count:{}, running_count:{}",
-                            desired_count,
-                            running_count
+                            desired_count, running_count
                         ));
                         break;
                     } else {
                         output::PrintLine::info(&format!(
                             "Waiting for new tasks to run... (desired_count:{}, running_count:{})",
-                            desired_count,
-                            running_count
+                            desired_count, running_count
                         ));
                     }
                 }
@@ -152,7 +135,7 @@ impl<'c> Executer<'c> {
 }
 
 impl<'c> EcsExecuter for Executer<'c> {
-    fn ecs_client(&self) -> &EcsClient<DefaultCredentialsProvider, hyper::client::Client> {
+    fn ecs_client(&self) -> &EcsClient {
         &self.ecs_client
     }
 }
