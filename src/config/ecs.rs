@@ -1,4 +1,3 @@
-
 use rusoto_ecs;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -10,7 +9,6 @@ pub struct Service {
     pub task_definition: TaskDefinition,
     pub role: Option<String>,
 }
-
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TaskDefinition {
@@ -49,8 +47,6 @@ impl HostVolumeProperties {
         }
     }
 }
-
-
 
 // rusoto compatible structs
 
@@ -117,6 +113,8 @@ pub struct ContainerDefinition {
     pub user: Option<String>,
     pub volumes_from: Option<VolumeFromList>,
     pub working_directory: Option<String>,
+    pub health_check: Option<HealthCheck>,
+    pub linux_parameters: Option<LinuxParameters>,
 }
 impl ContainerDefinition {
     pub fn to_rusoto(&self) -> rusoto_ecs::ContainerDefinition {
@@ -129,11 +127,13 @@ impl ContainerDefinition {
             docker_labels: self.docker_labels.to_owned(),
             docker_security_options: self.docker_security_options.to_owned(),
             entry_point: self.entry_point.to_owned(),
-            environment: self.environment
+            environment: self
+                .environment
                 .as_ref()
                 .map(|e| e.iter().map(|e0| e0.to_rusoto()).collect()),
             essential: self.essential,
-            extra_hosts: self.extra_hosts
+            extra_hosts: self
+                .extra_hosts
                 .as_ref()
                 .map(|e| e.iter().map(|e0| e0.to_rusoto()).collect()),
             hostname: self.hostname.to_owned(),
@@ -142,23 +142,29 @@ impl ContainerDefinition {
             log_configuration: self.log_configuration.as_ref().map(|e| e.to_rusoto()),
             memory: self.memory,
             memory_reservation: self.memory_reservation,
-            mount_points: self.mount_points
+            mount_points: self
+                .mount_points
                 .as_ref()
                 .map(|e| e.iter().map(|e0| e0.to_rusoto()).collect()),
             name: self.name.to_owned(),
-            port_mappings: self.port_mappings
+            port_mappings: self
+                .port_mappings
                 .as_ref()
                 .map(|e| e.iter().map(|e0| e0.to_rusoto()).collect()),
             privileged: self.privileged,
             readonly_root_filesystem: self.readonly_root_filesystem,
-            ulimits: self.ulimits
+            ulimits: self
+                .ulimits
                 .as_ref()
                 .map(|e| e.iter().map(|e0| e0.to_rusoto()).collect()),
             user: self.user.to_owned(),
-            volumes_from: self.volumes_from
+            volumes_from: self
+                .volumes_from
                 .as_ref()
                 .map(|e| e.iter().map(|e0| e0.to_rusoto()).collect()),
             working_directory: self.working_directory.to_owned(),
+            health_check: self.health_check.as_ref().map(|e| e.to_rusoto()),
+            linux_parameters: self.linux_parameters.as_ref().map(|e| e.to_rusoto()),
         }
     }
 }
@@ -186,7 +192,6 @@ impl KeyValuePair {
         }
     }
 }
-
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct HostEntry {
@@ -237,7 +242,6 @@ impl PortMapping {
         }
     }
 }
-
 
 pub type PortMappingList = Vec<PortMapping>;
 pub type TransportProtocol = String;
@@ -293,3 +297,95 @@ impl LogConfiguration {
 
 pub type LogConfigurationOptionsMap = ::std::collections::HashMap<String, String>;
 pub type LogDriver = String;
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct HealthCheck {
+    pub command: Vec<String>,
+    pub interval: Option<i64>,
+    pub retries: Option<i64>,
+    pub start_period: Option<i64>,
+    pub timeout: Option<i64>,
+}
+impl HealthCheck {
+    pub fn to_rusoto(&self) -> rusoto_ecs::HealthCheck {
+        rusoto_ecs::HealthCheck {
+            command: self.command.to_owned(),
+            interval: self.interval,
+            retries: self.retries,
+            start_period: self.start_period,
+            timeout: self.timeout,
+        }
+    }
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct LinuxParameters {
+    pub capabilities: Option<KernelCapabilities>,
+    pub devices: Option<Vec<Device>>,
+    pub init_process_enabled: Option<bool>,
+    pub shared_memory_size: Option<i64>,
+    pub tmpfs: Option<Vec<Tmpfs>>,
+}
+impl LinuxParameters {
+    pub fn to_rusoto(&self) -> rusoto_ecs::LinuxParameters {
+        rusoto_ecs::LinuxParameters {
+            capabilities: self.capabilities.as_ref().map(|e| e.to_rusoto()),
+            devices: self
+                .devices
+                .as_ref()
+                .map(|e| e.iter().map(|e0| e0.to_rusoto()).collect()),
+            init_process_enabled: self.init_process_enabled,
+            shared_memory_size: self.shared_memory_size,
+            tmpfs: self
+                .tmpfs
+                .as_ref()
+                .map(|e| e.iter().map(|e0| e0.to_rusoto()).collect()),
+        }
+    }
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct KernelCapabilities {
+    pub add: Option<Vec<String>>,
+    pub drop: Option<Vec<String>>,
+}
+impl KernelCapabilities {
+    pub fn to_rusoto(&self) -> rusoto_ecs::KernelCapabilities {
+        rusoto_ecs::KernelCapabilities {
+            add: self.add.to_owned(),
+            drop: self.drop.to_owned(),
+        }
+    }
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct Device {
+    pub container_path: Option<String>,
+    pub host_path: String,
+    pub permissions: Option<Vec<String>>,
+}
+impl Device {
+    pub fn to_rusoto(&self) -> rusoto_ecs::Device {
+        rusoto_ecs::Device {
+            container_path: self.container_path.to_owned(),
+            host_path: self.host_path.to_owned(),
+            permissions: self.permissions.to_owned(),
+        }
+    }
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct Tmpfs {
+    pub container_path: String,
+    pub mount_options: Option<Vec<String>>,
+    pub size: i64,
+}
+impl Tmpfs {
+    pub fn to_rusoto(&self) -> rusoto_ecs::Tmpfs {
+        rusoto_ecs::Tmpfs {
+            container_path: self.container_path.to_owned(),
+            mount_options: self.mount_options.to_owned(),
+            size: self.size,
+        }
+    }
+}
