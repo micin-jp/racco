@@ -84,6 +84,10 @@ pub trait Executer {
                 .iter()
                 .map(|cd| cd.to_rusoto())
                 .collect(),
+            execution_role_arn: task_definition_conf.execution_role_arn.to_owned(),
+            requires_compatibilities: task_definition_conf.requires_compatibilities.to_owned(),
+            cpu: task_definition_conf.cpu.to_owned(),
+            memory: task_definition_conf.memory.to_owned(),
             ..Default::default()
         };
 
@@ -111,6 +115,11 @@ pub trait Executer {
                 .as_ref()
                 .map(|lbs| lbs.iter().map(|lb| lb.to_rusoto()).collect()),
             role: service_conf.role.to_owned(),
+            launch_type: service_conf.launch_type.to_owned(),
+            network_configuration: service_conf
+                .network_configuration
+                .as_ref()
+                .map(|e| e.to_rusoto()),
             task_definition: task_definition.to_owned(),
             ..Default::default()
         };
@@ -170,6 +179,10 @@ pub trait Executer {
                 .deployment_configuration
                 .as_ref()
                 .map(|d| d.to_rusoto()),
+            network_configuration: service_conf
+                .network_configuration
+                .as_ref()
+                .map(|e| e.to_rusoto()),
             task_definition: task_definition.task_definition_arn.to_owned(),
             ..Default::default()
         };
@@ -213,10 +226,14 @@ pub trait Executer {
         &self,
         cluster: &str,
         task_definition_arn: &str,
+        launch_type: Option<&str>,
+        network_configuration: Option<&config::ecs::NetworkConfiguration>,
     ) -> Result<TaskDescription, Box<error::Error>> {
         let req = rusoto_ecs::RunTaskRequest {
             cluster: Some(cluster.to_owned()),
             task_definition: task_definition_arn.to_owned(),
+            launch_type: launch_type.map(str::to_string),
+            network_configuration: network_configuration.map(|d| d.to_rusoto()),
             ..Default::default()
         };
 

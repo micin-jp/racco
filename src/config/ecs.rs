@@ -8,6 +8,8 @@ pub struct Service {
     pub load_balancers: Option<LoadBalancers>,
     pub task_definition: TaskDefinition,
     pub role: Option<String>,
+    pub launch_type: Option<String>,
+    pub network_configuration: Option<NetworkConfiguration>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -17,6 +19,38 @@ pub struct TaskDefinition {
     pub task_role_arn: Option<String>,
     pub network_mode: Option<NetworkMode>,
     pub volumes: Option<Vec<Volume>>,
+    pub requires_compatibilities: Option<Vec<String>>,
+    pub execution_role_arn: Option<String>,
+    pub cpu: Option<String>,
+    pub memory: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NetworkConfiguration {
+    pub awsvpc_configuration: Option<AwsVpcConfiguration>,
+}
+impl NetworkConfiguration {
+    pub fn to_rusoto(&self) -> rusoto_ecs::NetworkConfiguration {
+        rusoto_ecs::NetworkConfiguration {
+            awsvpc_configuration: self.awsvpc_configuration.as_ref().map(|e| e.to_rusoto()),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AwsVpcConfiguration {
+    pub assign_public_ip: Option<String>,
+    pub security_groups: Option<Vec<String>>,
+    pub subnets: Vec<String>,
+}
+impl AwsVpcConfiguration {
+    pub fn to_rusoto(&self) -> rusoto_ecs::AwsVpcConfiguration {
+        rusoto_ecs::AwsVpcConfiguration {
+            assign_public_ip: self.assign_public_ip.to_owned(),
+            security_groups: self.security_groups.to_owned(),
+            subnets: self.subnets.to_owned(),
+        }
+    }
 }
 
 pub type NetworkMode = String;

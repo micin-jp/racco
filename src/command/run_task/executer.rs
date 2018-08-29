@@ -50,7 +50,12 @@ impl<'c> Executer<'c> {
         );
 
         output::PrintLine::info("Starting to run the task");
-        let running_task = try!(self.run_task(&self.config.cluster, &task_definition_arn));
+        let running_task = try!(self.run_task(
+            &self.config.cluster,
+            &task_definition_arn,
+            self.config.launch_type.as_ref().map(|s| s.as_str()),
+            self.config.network_configuration.as_ref(),
+        ));
 
         if !self.options.no_wait {
             try!(self.wait_for_stopped(&running_task));
