@@ -1,9 +1,8 @@
 use std::error;
-use std::time::Duration;
 use std::thread::sleep;
+use std::time::Duration;
 
-use hyper;
-use rusoto_core::{default_tls_client, DefaultCredentialsProvider, Region};
+use rusoto_core::Region;
 use rusoto_ecs::EcsClient;
 
 use config;
@@ -18,7 +17,7 @@ pub struct ExecuterOptions {
 }
 
 pub struct Executer<'c> {
-    ecs_client: EcsClient<DefaultCredentialsProvider, hyper::client::Client>,
+    ecs_client: EcsClient,
     config: &'c config::command::RunTaskConfig,
     options: &'c ExecuterOptions,
 }
@@ -30,12 +29,7 @@ impl<'c> Executer<'c> {
     ) -> Self {
         trace!("command::run_task::Executer::from_config");
 
-        let credentials = DefaultCredentialsProvider::new().unwrap();
-        let client = EcsClient::new(
-            default_tls_client().unwrap(),
-            credentials,
-            Region::ApNortheast1,
-        );
+        let client = EcsClient::new(Region::ApNortheast1);
         Executer {
             ecs_client: client,
             config: config,
@@ -56,7 +50,12 @@ impl<'c> Executer<'c> {
         );
 
         output::PrintLine::info("Starting to run the task");
-        let running_task = try!(self.run_task(&self.config.cluster, &task_definition_arn));
+        let running_task = try!(self.run_task(
+            &self.config.cluster,
+            &task_definition_arn,
+            self.config.launch_type.as_ref().map(|s| s.as_str()),
+            self.config.network_configuration.as_ref(),
+        ));
 
         if !self.options.no_wait {
             try!(self.wait_for_stopped(&running_task));
@@ -65,7 +64,6 @@ impl<'c> Executer<'c> {
         output::PrintLine::success("Finished running the task");
         Ok(())
     }
-
 
     fn wait_for_stopped(&self, running_task: &TaskDescription) -> Result<(), Box<error::Error>> {
         trace!("command::run-task::Executer::wait_for_stopped");
@@ -91,9 +89,10 @@ impl<'c> Executer<'c> {
                     if status == "STOPPED" {
                         if let Some(reason) = task.stopped_reason.as_ref() {
                             if reason != "Essential container in task exited" {
-                                output::PrintLine::error(
-                                    &format!("The task stopped with reason: {}", reason),
-                                );
+                                output::PrintLine::error(&format!(
+                                    "The task stopped with reason: {}",
+                                    reason
+                                ));
                                 return Err(Box::new(CommandError::Unknown));
                             }
                         }
@@ -120,9 +119,10 @@ impl<'c> Executer<'c> {
                                     .as_ref()
                                     .map(String::as_str)
                                     .unwrap_or("");
-                                output::PrintLine::error(
-                                    &format!("Failed running task by some reason: {}", reason),
-                                );
+                                output::PrintLine::error(&format!(
+                                    "Failed running task by some reason: {}",
+                                    reason
+                                ));
                                 return Err(Box::new(CommandError::Unknown));
                             }
                         }
@@ -164,7 +164,7 @@ impl<'c> Executer<'c> {
 }
 
 impl<'c> EcsExecuter for Executer<'c> {
-    fn ecs_client(&self) -> &EcsClient<DefaultCredentialsProvider, hyper::client::Client> {
+    fn ecs_client(&self) -> &EcsClient {
         &self.ecs_client
     }
 }

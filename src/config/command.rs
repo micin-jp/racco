@@ -1,17 +1,17 @@
 use std::collections::BTreeMap;
-use std::fs::File;
 use std::error;
 use std::fmt;
+use std::fs::File;
 use std::io::prelude::*;
 
 use handlebars::Handlebars;
-use serde_yaml;
 use serde_json;
+use serde_yaml;
 
 use semver::{Version, VersionReq};
 
-use super::ecs;
 use super::cloudwatch_events;
+use super::ecs;
 
 #[derive(Debug)]
 pub enum ConfigError {
@@ -170,6 +170,8 @@ pub struct RunTaskConfig {
     pub name: String,
     pub cluster: String,
     pub task_definition: ecs::TaskDefinition,
+    pub launch_type: Option<String>,
+    pub network_configuration: Option<ecs::NetworkConfiguration>,
 }
 
 pub type ScheduleTaskConfigGroup = Vec<ScheduleTaskConfig>;
@@ -193,7 +195,6 @@ pub struct ParamsConfig {
 pub struct ParamsSecure {
     pub key: String,
 }
-
 
 #[test]
 fn test_apply_template_vars() {
