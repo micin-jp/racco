@@ -54,7 +54,7 @@ impl MainCommand {
     pub fn run() -> Result<(), Box<error::Error>> {
 
         let matches = App::new("Racco")
-            .version("0.1.0")
+            .version(env!("CARGO_PKG_VERSION"))
             .author("Daichi Sakai. <daisaru11@gmail.com>")
             .about("Deployment toolkit for AWS ECS")
             .arg(
