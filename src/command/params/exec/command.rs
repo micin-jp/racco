@@ -3,8 +3,8 @@ use std::error;
 use clap;
 use config;
 
-use super::{Program, Arguments};
 use super::executer::Executer;
+use super::{Arguments, Program};
 
 pub struct Command<'c> {
     config: &'c config::command::Config,

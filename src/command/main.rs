@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
-use std::error;
 use std::env;
+use std::error;
 
 use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 
@@ -9,11 +9,11 @@ use output;
 
 use super::error::CommandError;
 
-use super::service;
+use super::configtest;
+use super::params;
 use super::run_task;
 use super::schedule_task;
-use super::params;
-use super::configtest;
+use super::service;
 
 pub struct MainCommand {}
 
@@ -52,7 +52,6 @@ impl MainCommand {
     }
 
     pub fn run() -> Result<(), Box<error::Error>> {
-
         let matches = App::new("Racco")
             .version(env!("CARGO_PKG_VERSION"))
             .author("Daichi Sakai. <daisaru11@gmail.com>")
@@ -71,7 +70,7 @@ impl MainCommand {
                     .long("config-template-var-file")
                     .value_name("FILENAME")
                     .help("A File defines variables rendered in config template")
-                    .takes_value(true)
+                    .takes_value(true),
             )
             .arg(
                 Arg::with_name("CONFIG_TEMPLATE_VARIABLES")
@@ -83,10 +82,7 @@ impl MainCommand {
                     .multiple(true)
                     .validator(MainCommand::validate_args_template_variables),
             )
-            .subcommand(
-                SubCommand::with_name("config")
-                    .about("Display loaded config")
-            )
+            .subcommand(SubCommand::with_name("config").about("Display loaded config"))
             .subcommand(
                 SubCommand::with_name("service")
                     .about("Manages ECS services")
@@ -102,12 +98,12 @@ impl MainCommand {
                             .arg(
                                 Arg::with_name("ALL")
                                     .help("Deploy all services")
-                                    .long("all")
+                                    .long("all"),
                             )
                             .arg(
                                 Arg::with_name("NO_WAIT")
                                     .help("Do not wait until new tasks to be running")
-                                    .long("no-wait")
+                                    .long("no-wait"),
                             ),
                     )
                     .subcommand(
@@ -119,15 +115,11 @@ impl MainCommand {
                                     .required_unless("ALL")
                                     .index(1),
                             )
-                            .arg(
-                                Arg::with_name("ALL")
-                                    .help("Stop all services")
-                                    .long("all")
-                            )
+                            .arg(Arg::with_name("ALL").help("Stop all services").long("all"))
                             .arg(
                                 Arg::with_name("NO_WAIT")
                                     .help("Do not wait until new tasks to be stopped")
-                                    .long("no-wait")
+                                    .long("no-wait"),
                             ),
                     ),
             )
@@ -143,7 +135,7 @@ impl MainCommand {
                     .arg(
                         Arg::with_name("NO_WAIT")
                             .help("Do not wait until new tasks to be running")
-                            .long("no-wait")
+                            .long("no-wait"),
                     ),
             )
             .subcommand(
@@ -161,7 +153,7 @@ impl MainCommand {
                             .arg(
                                 Arg::with_name("ALL")
                                     .help("Put all schedule tasks")
-                                    .long("all")
+                                    .long("all"),
                             ),
                     )
                     .subcommand(
@@ -176,7 +168,7 @@ impl MainCommand {
                             .arg(
                                 Arg::with_name("ALL")
                                     .help("Delete all schedule tasks")
-                                    .long("all")
+                                    .long("all"),
                             ),
                     ),
             )
@@ -254,92 +246,85 @@ impl MainCommand {
         ) {
             Err(error) => {
                 output::PrintLine::error(&format!("Failed loading the configuration: {}", error));
-                return Err(error)
+                return Err(error);
             }
             Ok(config) => {
-
                 // service
                 if let Some(sub0_matches) = matches.subcommand_matches("service") {
                     if let Some(sub1_matches) = sub0_matches.subcommand_matches("deploy") {
-
                         info!("start service deploy");
 
                         let cmd = service::deploy::Command::from_args(&config, sub1_matches);
                         match cmd.run() {
                             Ok(_) => {
                                 info!("end service deploy");
-                                return Ok(())
+                                return Ok(());
                             }
                             Err(error) => {
-                                output::PrintLine::error(
-                                    &format!("Failed deploying the service: {}", error),
-                                );
-                                return Err(error)
+                                output::PrintLine::error(&format!(
+                                    "Failed deploying the service: {}",
+                                    error
+                                ));
+                                return Err(error);
                             }
                         }
-
                     }
 
                     if let Some(sub1_matches) = sub0_matches.subcommand_matches("stop") {
-
                         info!("start stopping service");
 
                         let cmd = service::stop::Command::from_args(&config, sub1_matches);
                         match cmd.run() {
                             Ok(_) => {
                                 info!("end stopping service");
-                                return Ok(())
+                                return Ok(());
                             }
                             Err(error) => {
-                                output::PrintLine::error(
-                                    &format!("Failed stopping the service: {}", error),
-                                );
-                                return Err(error)
+                                output::PrintLine::error(&format!(
+                                    "Failed stopping the service: {}",
+                                    error
+                                ));
+                                return Err(error);
                             }
                         }
-
                     }
                 }
 
                 // config
                 if let Some(sub0_matches) = matches.subcommand_matches("config") {
-
                     info!("start config");
 
                     let cmd = configtest::Command::from_args(&config, sub0_matches);
                     match cmd.run() {
                         Ok(_) => {
                             info!("end config");
-                            return Ok(())
+                            return Ok(());
                         }
                         Err(error) => {
-                            output::PrintLine::error(
-                                &format!("Failed display config: {}", error),
-                            );
-                            return Err(error)
+                            output::PrintLine::error(&format!("Failed display config: {}", error));
+                            return Err(error);
                         }
                     }
                 }
 
                 // run-task
                 if let Some(sub_matches) = matches.subcommand_matches("run-task") {
-
                     info!("start run-task");
 
                     let cmd = run_task::Command::from_args(&config, sub_matches);
                     match cmd.run() {
                         Ok(_) => {
                             info!("end run-task");
-                            return Ok(())
+                            return Ok(());
                         }
                         Err(error) => {
-                            output::PrintLine::error(
-                                &format!("Failed running the task: {}", error),
-                            );
-                            return Err(error)
+                            output::PrintLine::error(&format!(
+                                "Failed running the task: {}",
+                                error
+                            ));
+                            return Err(error);
                         }
                     }
-
                 }
 
                 // schedule-task
@@ -351,11 +336,11 @@ impl MainCommand {
                         match cmd.run() {
                             Ok(_) => {
                                 info!("end schdule-task put");
-                                return Ok(())
+                                return Ok(());
                             }
                             Err(error) => {
                                 output::PrintLine::error(&format!("Failed: {}", error));
-                                return Err(error)
+                                return Err(error);
                             }
                         }
                     }
@@ -366,11 +351,11 @@ impl MainCommand {
                         match cmd.run() {
                             Ok(_) => {
                                 info!("end schedule-task delete");
-                                return Ok(())
+                                return Ok(());
                             }
                             Err(error) => {
                                 output::PrintLine::error(&format!("Failed: {}", error));
-                                return Err(error)
+                                return Err(error);
                             }
                         }
                     }
@@ -385,14 +370,13 @@ impl MainCommand {
                         match cmd.run() {
                             Ok(_) => {
                                 info!("end params get");
-                                return Ok(())
+                                return Ok(());
                             }
                             Err(error) => {
                                 output::PrintLine::error(&format!("Failed: {}", error));
-                                return Err(error)
+                                return Err(error);
                             }
                         }
-
                     }
                     if let Some(sub1_matches) = sub0_matches.subcommand_matches("list") {
                         info!("start params list");
@@ -401,11 +385,11 @@ impl MainCommand {
                         match cmd.run() {
                             Ok(_) => {
                                 info!("end params list");
-                                return Ok(())
+                                return Ok(());
                             }
                             Err(error) => {
                                 output::PrintLine::error(&format!("Failed: {}", error));
-                                return Err(error)
+                                return Err(error);
                             }
                         }
                     }
@@ -416,11 +400,11 @@ impl MainCommand {
                         match cmd.run() {
                             Ok(_) => {
                                 info!("end params put");
-                                return Ok(())
+                                return Ok(());
                             }
                             Err(error) => {
                                 output::PrintLine::error(&format!("Failed: {}", error));
-                                return Err(error)
+                                return Err(error);
                             }
                         }
                     }
@@ -431,11 +415,11 @@ impl MainCommand {
                         match cmd.run() {
                             Ok(_) => {
                                 info!("end params delete");
-                                return Ok(())
+                                return Ok(());
                             }
                             Err(error) => {
                                 output::PrintLine::error(&format!("Failed: {}", error));
-                                return Err(error)
+                                return Err(error);
                             }
                         }
                     }
@@ -446,14 +430,13 @@ impl MainCommand {
                         match cmd.run() {
                             Ok(_) => {
                                 info!("end params exec");
-                                return Ok(())
+                                return Ok(());
                             }
                             Err(error) => {
                                 output::PrintLine::error(&format!("Failed: {}", error));
-                                return Err(error)
+                                return Err(error);
                             }
                         }
-
                     }
                 }
             }

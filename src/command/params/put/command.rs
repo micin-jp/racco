@@ -2,8 +2,8 @@ use std::error;
 
 use clap;
 
-use config;
 use super::executer::Executer;
+use config;
 
 pub struct Command<'c> {
     config: &'c config::command::Config,
@@ -33,7 +33,6 @@ impl<'c> Command<'c> {
     pub fn run(&self) -> Result<(), Box<error::Error>> {
         trace!("command::params::put::Command::run");
         if let Some(params_config) = self.config.params.as_ref() {
-
             let exec = Executer::from_config(&params_config);
 
             try!(exec.run(self.name, self.value));

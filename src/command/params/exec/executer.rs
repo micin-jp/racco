@@ -1,12 +1,12 @@
 use std::error;
 use std::process;
 
+use command::error::CommandError;
 use config;
 use output;
-use command::error::CommandError;
 
-use super::{Arguments, Program};
 use super::super::Executer as ParamsExecuter;
+use super::{Arguments, Program};
 
 pub struct Executer<'c> {
     config: &'c config::command::ParamsConfig,
@@ -58,5 +58,7 @@ impl<'c> Executer<'c> {
 }
 
 impl<'c> ParamsExecuter for Executer<'c> {
-    fn config(&self) -> &config::command::ParamsConfig { &self.config }
+    fn config(&self) -> &config::command::ParamsConfig {
+        &self.config
+    }
 }

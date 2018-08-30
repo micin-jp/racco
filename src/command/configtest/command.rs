@@ -6,27 +6,27 @@ use serde_yaml;
 use config;
 
 pub struct Command<'c> {
-  config: &'c config::command::Config,
+    config: &'c config::command::Config,
 }
 
 impl<'c> Command<'c> {
-  pub fn from_args(config: &'c config::command::Config, _args: &'c clap::ArgMatches<'c>) -> Self {
-    trace!("command::config::Command::from_args");
+    pub fn from_args(config: &'c config::command::Config, _args: &'c clap::ArgMatches<'c>) -> Self {
+        trace!("command::config::Command::from_args");
 
-    Command { config: config }
-  }
+        Command { config: config }
+    }
 
-  pub fn new(config: &'c config::command::Config) -> Self {
-    trace!("command::config::Command::new");
+    pub fn new(config: &'c config::command::Config) -> Self {
+        trace!("command::config::Command::new");
 
-    Command { config: config }
-  }
+        Command { config: config }
+    }
 
-  pub fn run(&self) -> Result<(), Box<error::Error>> {
-    trace!("command::config::Command::run");
+    pub fn run(&self) -> Result<(), Box<error::Error>> {
+        trace!("command::config::Command::run");
 
-    println!("{}", serde_yaml::to_string(&self.config).unwrap());
+        println!("{}", serde_yaml::to_string(&self.config).unwrap());
 
-    Ok(())
-  }
+        Ok(())
+    }
 }
