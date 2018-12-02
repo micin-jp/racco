@@ -120,6 +120,10 @@ pub trait Executer {
                 .network_configuration
                 .as_ref()
                 .map(|e| e.to_rusoto()),
+            service_registries: service_conf
+                .service_registries
+                .as_ref()
+                .map(|srs| srs.iter().map(|sr| sr.to_rusoto()).collect()),
             task_definition: task_definition.to_owned(),
             ..Default::default()
         };
