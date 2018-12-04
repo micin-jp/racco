@@ -55,6 +55,7 @@ impl<'c> Executer<'c> {
             &task_definition_arn,
             self.config.launch_type.as_ref().map(|s| s.as_str()),
             self.config.network_configuration.as_ref(),
+            self.config.platform_version.as_ref().map(|s| s.as_str()),
         ));
 
         if !self.options.no_wait {

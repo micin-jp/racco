@@ -65,6 +65,7 @@ impl<'c> Executer<'c> {
             launch_type: service_conf.launch_type.to_owned(),
             network_configuration: service_conf.network_configuration.to_owned(),
             service_registries: service_conf.service_registries.to_owned(),
+            platform_version: service_conf.platform_version.to_owned(),
         };
 
         output::PrintLine::info("Starting to update the service");
