@@ -10,6 +10,8 @@ pub struct Service {
     pub role: Option<String>,
     pub launch_type: Option<String>,
     pub network_configuration: Option<NetworkConfiguration>,
+    pub service_registries: Option<Vec<ServiceRegistry>>,
+    pub platform_version: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -49,6 +51,20 @@ impl AwsVpcConfiguration {
             assign_public_ip: self.assign_public_ip.to_owned(),
             security_groups: self.security_groups.to_owned(),
             subnets: self.subnets.to_owned(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ServiceRegistry {
+    pub port: Option<i64>,
+    pub registry_arn: Option<String>,
+}
+impl ServiceRegistry {
+    pub fn to_rusoto(&self) -> rusoto_ecs::ServiceRegistry {
+        rusoto_ecs::ServiceRegistry {
+            port: self.port,
+            registry_arn: self.registry_arn.to_owned(),
         }
     }
 }

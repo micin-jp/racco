@@ -120,7 +120,12 @@ pub trait Executer {
                 .network_configuration
                 .as_ref()
                 .map(|e| e.to_rusoto()),
+            service_registries: service_conf
+                .service_registries
+                .as_ref()
+                .map(|srs| srs.iter().map(|sr| sr.to_rusoto()).collect()),
             task_definition: task_definition.to_owned(),
+            platform_version: service_conf.platform_version.to_owned(),
             ..Default::default()
         };
 
@@ -184,6 +189,7 @@ pub trait Executer {
                 .as_ref()
                 .map(|e| e.to_rusoto()),
             task_definition: task_definition.task_definition_arn.to_owned(),
+            platform_version: service_conf.platform_version.to_owned(),
             ..Default::default()
         };
 
@@ -228,12 +234,14 @@ pub trait Executer {
         task_definition_arn: &str,
         launch_type: Option<&str>,
         network_configuration: Option<&config::ecs::NetworkConfiguration>,
+        platform_version: Option<&str>,
     ) -> Result<TaskDescription, Box<error::Error>> {
         let req = rusoto_ecs::RunTaskRequest {
             cluster: Some(cluster.to_owned()),
             task_definition: task_definition_arn.to_owned(),
             launch_type: launch_type.map(str::to_string),
             network_configuration: network_configuration.map(|d| d.to_rusoto()),
+            platform_version: platform_version.map(str::to_string),
             ..Default::default()
         };
 
