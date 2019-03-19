@@ -62,14 +62,14 @@ impl Config {
     pub fn from_file(
         file: &str,
         template_variable_map: Option<&BTreeMap<String, String>>,
-        template_variable_file: Option<&str>,
+        template_variable_files: Option<Vec<&str>>,
     ) -> Result<Config, Box<error::Error>> {
         debug!("Config::from_file");
 
         let contents = try!(Self::load_file(&file));
         let tmpl_vars = try!(Self::load_template_variables(
             template_variable_map,
-            template_variable_file
+            template_variable_files
         ));
 
         let config = try!(Self::new(&contents, &tmpl_vars));
@@ -105,19 +105,23 @@ impl Config {
 
     fn load_template_variables(
         template_variable_map: Option<&BTreeMap<String, String>>,
-        template_variable_file: Option<&str>,
+        template_variable_files: Option<Vec<&str>>,
     ) -> Result<serde_json::Value, Box<error::Error>> {
-        let mut vars = match template_variable_file {
-            Some(tmpl_var_file) => {
+        let mut vars = json!({});
+
+        if let Some(tmpl_var_files) = template_variable_files {
+            for tmpl_var_file in tmpl_var_files {
                 let mut var_file = try!(File::open(tmpl_var_file));
                 let mut var_contents = String::new();
 
                 try!(var_file.read_to_string(&mut var_contents));
 
-                try!(serde_yaml::from_str::<serde_json::Value>(&var_contents))
+                let j = try!(serde_yaml::from_str::<serde_json::Value>(&var_contents));
+                for (k, v) in j.as_object().unwrap() {
+                    vars[k] = v.to_owned()
+                }
             }
-            None => json!({}),
-        };
+        }
 
         if let Some(tmpl_vars) = template_variable_map {
             for (k, v) in tmpl_vars {
