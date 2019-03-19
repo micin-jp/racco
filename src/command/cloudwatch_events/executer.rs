@@ -28,6 +28,7 @@ pub trait Executer {
 
         let req = rusoto_events::DeleteRuleRequest {
             name: rule_name.to_owned(),
+            ..Default::default()
         };
 
         try!(self.events_client().delete_rule(req).sync());
@@ -69,6 +70,7 @@ pub trait Executer {
             ecs_parameters: Some(rusoto_events::EcsParameters {
                 task_count: Some(1),
                 task_definition_arn: task_definition_arn.to_owned(),
+                ..Default::default()
             }),
             role_arn: rule_targets_role_arn.map(str::to_string),
             ..Default::default()

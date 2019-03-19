@@ -3,7 +3,7 @@ use rusoto_ecs;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Service {
     pub name: String,
-    pub desired_count: i64,
+    pub desired_count: Option<i64>,
     pub deployment_configuration: Option<DeploymentConfiguration>,
     pub load_balancers: Option<LoadBalancers>,
     pub task_definition: TaskDefinition,
@@ -57,12 +57,16 @@ impl AwsVpcConfiguration {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ServiceRegistry {
+    pub container_name: Option<String>,
+    pub container_port: Option<i64>,
     pub port: Option<i64>,
     pub registry_arn: Option<String>,
 }
 impl ServiceRegistry {
     pub fn to_rusoto(&self) -> rusoto_ecs::ServiceRegistry {
         rusoto_ecs::ServiceRegistry {
+            container_name: self.container_name.to_owned(),
+            container_port: self.container_port,
             port: self.port,
             registry_arn: self.registry_arn.to_owned(),
         }
@@ -73,14 +77,39 @@ pub type NetworkMode = String;
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct Volume {
+    pub docker_volume_configuration: Option<DockerVolumeConfiguration>,
     pub host: Option<HostVolumeProperties>,
     pub name: Option<String>,
 }
 impl Volume {
     pub fn to_rusoto(&self) -> rusoto_ecs::Volume {
         rusoto_ecs::Volume {
+            docker_volume_configuration: self
+                .docker_volume_configuration
+                .as_ref()
+                .map(|c| c.to_rusoto()),
             host: self.host.as_ref().map(|e| e.to_rusoto()),
             name: self.name.to_owned(),
+        }
+    }
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct DockerVolumeConfiguration {
+    pub autoprovision: Option<bool>,
+    pub driver: Option<String>,
+    pub driver_opts: Option<::std::collections::HashMap<String, String>>,
+    pub labels: Option<::std::collections::HashMap<String, String>>,
+    pub scope: Option<String>,
+}
+impl DockerVolumeConfiguration {
+    pub fn to_rusoto(&self) -> rusoto_ecs::DockerVolumeConfiguration {
+        rusoto_ecs::DockerVolumeConfiguration {
+            autoprovision: self.autoprovision,
+            driver: self.driver.to_owned(),
+            driver_opts: self.driver_opts.to_owned(),
+            labels: self.labels.to_owned(),
+            scope: self.scope.to_owned(),
         }
     }
 }
@@ -150,6 +179,7 @@ pub struct ContainerDefinition {
     pub extra_hosts: Option<HostEntryList>,
     pub hostname: Option<String>,
     pub image: Option<String>,
+    pub interactive: Option<bool>,
     pub links: Option<StringList>,
     pub log_configuration: Option<LogConfiguration>,
     pub memory: Option<BoxedInteger>,
@@ -158,7 +188,12 @@ pub struct ContainerDefinition {
     pub name: Option<String>,
     pub port_mappings: Option<PortMappingList>,
     pub privileged: Option<BoxedBoolean>,
+    pub pseudo_terminal: Option<bool>,
     pub readonly_root_filesystem: Option<BoxedBoolean>,
+    pub repository_credentials: Option<RepositoryCredentials>,
+    pub resource_requirements: Option<Vec<ResourceRequirement>>,
+    pub secrets: Option<Vec<Secret>>,
+    pub system_controls: Option<Vec<SystemControl>>,
     pub ulimits: Option<UlimitList>,
     pub user: Option<String>,
     pub volumes_from: Option<VolumeFromList>,
@@ -188,6 +223,7 @@ impl ContainerDefinition {
                 .map(|e| e.iter().map(|e0| e0.to_rusoto()).collect()),
             hostname: self.hostname.to_owned(),
             image: self.image.to_owned(),
+            interactive: self.interactive,
             links: self.links.to_owned(),
             log_configuration: self.log_configuration.as_ref().map(|e| e.to_rusoto()),
             memory: self.memory,
@@ -202,7 +238,21 @@ impl ContainerDefinition {
                 .as_ref()
                 .map(|e| e.iter().map(|e0| e0.to_rusoto()).collect()),
             privileged: self.privileged,
+            pseudo_terminal: self.pseudo_terminal,
             readonly_root_filesystem: self.readonly_root_filesystem,
+            repository_credentials: self.repository_credentials.as_ref().map(|e| e.to_rusoto()),
+            resource_requirements: self
+                .resource_requirements
+                .as_ref()
+                .map(|e| e.iter().map(|e0| e0.to_rusoto()).collect()),
+            secrets: self
+                .secrets
+                .as_ref()
+                .map(|e| e.iter().map(|e0| e0.to_rusoto()).collect()),
+            system_controls: self
+                .system_controls
+                .as_ref()
+                .map(|e| e.iter().map(|e0| e0.to_rusoto()).collect()),
             ulimits: self
                 .ulimits
                 .as_ref()
@@ -215,6 +265,60 @@ impl ContainerDefinition {
             working_directory: self.working_directory.to_owned(),
             health_check: self.health_check.as_ref().map(|e| e.to_rusoto()),
             linux_parameters: self.linux_parameters.as_ref().map(|e| e.to_rusoto()),
+        }
+    }
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct RepositoryCredentials {
+    pub credentials_parameter: String,
+}
+impl RepositoryCredentials {
+    pub fn to_rusoto(&self) -> rusoto_ecs::RepositoryCredentials {
+        rusoto_ecs::RepositoryCredentials {
+            credentials_parameter: self.credentials_parameter.to_owned(),
+        }
+    }
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct ResourceRequirement {
+    pub type_: String,
+    pub value: String,
+}
+impl ResourceRequirement {
+    pub fn to_rusoto(&self) -> rusoto_ecs::ResourceRequirement {
+        rusoto_ecs::ResourceRequirement {
+            type_: self.type_.to_owned(),
+            value: self.value.to_owned(),
+        }
+    }
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct Secret {
+    pub name: String,
+    pub value_from: String,
+}
+impl Secret {
+    pub fn to_rusoto(&self) -> rusoto_ecs::Secret {
+        rusoto_ecs::Secret {
+            name: self.name.to_owned(),
+            value_from: self.value_from.to_owned(),
+        }
+    }
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct SystemControl {
+    pub namespace: Option<String>,
+    pub value: Option<String>,
+}
+impl SystemControl {
+    pub fn to_rusoto(&self) -> rusoto_ecs::SystemControl {
+        rusoto_ecs::SystemControl {
+            namespace: self.namespace.to_owned(),
+            value: self.value.to_owned(),
         }
     }
 }
