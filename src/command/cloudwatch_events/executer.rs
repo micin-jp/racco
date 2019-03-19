@@ -57,19 +57,21 @@ pub trait Executer {
 
     fn put_ecs_task_target(
         &self,
-        rule_conf: &config::cloudwatch_events::ScheduleRule,
         rule_targets_role_arn: Option<&str>,
         cluster_arn: &str,
         task_definition_arn: &str,
+        config: &config::command::ScheduleTaskConfig,
     ) -> Result<(), Box<error::Error>> {
         trace!("command::cloudwatch_events::Executer::put_ecs_task_target");
 
         let targets = vec![rusoto_events::Target {
-            id: self.auto_generated_target_id(rule_conf),
+            id: self.auto_generated_target_id(&config.rule),
             arn: cluster_arn.to_owned(),
             ecs_parameters: Some(rusoto_events::EcsParameters {
                 task_count: Some(1),
                 task_definition_arn: task_definition_arn.to_owned(),
+                launch_type: config.launch_type.to_owned(),
+                network_configuration: config.network_configuration.as_ref().map(|d| d.to_rusoto()),
                 ..Default::default()
             }),
             role_arn: rule_targets_role_arn.map(str::to_string),
@@ -77,7 +79,7 @@ pub trait Executer {
         }];
 
         let req = rusoto_events::PutTargetsRequest {
-            rule: rule_conf.name.to_owned(),
+            rule: config.rule.name.to_owned(),
             targets: targets,
             ..Default::default()
         };

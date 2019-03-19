@@ -36,20 +36,16 @@ impl<'c> Executer<'c> {
 
         let maybe_ecs_cluster = try!(self.describe_cluster(&self.config.cluster));
         let ecs_cluster = try!(maybe_ecs_cluster.ok_or(Box::new(CommandError::Unknown)));
-        let ecs_cluster_arn = try!(
-            ecs_cluster
-                .cluster_arn
-                .as_ref()
-                .ok_or(Box::new(CommandError::Unknown,))
-        );
+        let ecs_cluster_arn = try!(ecs_cluster
+            .cluster_arn
+            .as_ref()
+            .ok_or(Box::new(CommandError::Unknown,)));
 
         let task_definition = try!(self.register_task_definition(&self.config.task_definition));
-        let task_definition_arn = try!(
-            task_definition
-                .task_definition_arn
-                .as_ref()
-                .ok_or(Box::new(CommandError::Unknown,),)
-        );
+        let task_definition_arn = try!(task_definition
+            .task_definition_arn
+            .as_ref()
+            .ok_or(Box::new(CommandError::Unknown,),));
 
         let role_arn = self
             .config
@@ -59,10 +55,10 @@ impl<'c> Executer<'c> {
 
         try!(self.put_rule(&self.config.rule));
         try!(self.put_ecs_task_target(
-            &self.config.rule,
             role_arn,
             ecs_cluster_arn,
             task_definition_arn,
+            &self.config,
         ));
 
         output::PrintLine::success("Finished putting the scheduled task");
