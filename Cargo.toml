@@ -12,11 +12,11 @@ hyper = "0.10.0"
 termion = "1.5.1"
 log = "0.3"
 handlebars = "0.29.1"
-rusoto_core = {version = "0.33.0"}
-rusoto_credential = {version = "0.11.0"}
-rusoto_ecs = {version = "0.33.0"}
-rusoto_ssm = {version = "0.33.0"}
-rusoto_events = {version = "0.33.0"}
+rusoto_core = {version = "0.37.0"}
+rusoto_credential = {version = "0.16.0"}
+rusoto_ecs = {version = "0.37.0"}
+rusoto_ssm = {version = "0.37.0"}
+rusoto_events = {version = "0.37.0"}
 serde = "1.0"
 serde_derive = "1.0.8"
 serde_yaml = "0.7.1"
