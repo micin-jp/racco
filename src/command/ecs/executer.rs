@@ -51,6 +51,7 @@ pub trait Executer {
 
         let req = rusoto_ecs::DescribeTaskDefinitionRequest {
             task_definition: family.to_owned(),
+            ..Default::default()
         };
 
         match self.ecs_client().describe_task_definition(req).sync() {
@@ -145,6 +146,7 @@ pub trait Executer {
         let req = rusoto_ecs::DescribeServicesRequest {
             cluster: Some(cluster.to_owned()),
             services: vec![service_conf.name.to_owned()],
+            ..Default::default()
         };
 
         let res = try!(self.ecs_client().describe_services(req).sync());
@@ -179,7 +181,7 @@ pub trait Executer {
         let req = rusoto_ecs::UpdateServiceRequest {
             service: service_conf.name.to_owned(),
             cluster: Some(cluster.to_owned()),
-            desired_count: Some(service_conf.desired_count),
+            desired_count: service_conf.desired_count,
             deployment_configuration: service_conf
                 .deployment_configuration
                 .as_ref()

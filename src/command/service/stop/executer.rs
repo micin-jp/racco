@@ -57,7 +57,7 @@ impl<'c> Executer<'c> {
 
         let zero_task_service = config::ecs::Service {
             name: service_conf.name.to_owned(),
-            desired_count: 0,
+            desired_count: Some(0),
             deployment_configuration: service_conf.deployment_configuration.to_owned(),
             load_balancers: service_conf.load_balancers.to_owned(),
             task_definition: service_conf.task_definition.to_owned(),

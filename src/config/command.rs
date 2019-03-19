@@ -181,6 +181,8 @@ pub type ScheduleTaskConfigGroup = Vec<ScheduleTaskConfig>;
 pub struct ScheduleTaskConfig {
     pub name: String,
     pub cluster: String,
+    pub launch_type: Option<String>,
+    pub network_configuration: Option<cloudwatch_events::NetworkConfiguration>,
     pub task_definition: ecs::TaskDefinition,
     pub rule: cloudwatch_events::ScheduleRule,
     pub rule_targets_role_arn: Option<String>,
