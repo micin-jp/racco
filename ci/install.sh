@@ -10,16 +10,11 @@ main() {
         sort=gsort  # for `sort --sort-version`, from brew's coreutils.
     fi
 
-    # This fetches latest stable release
-    local tag=$(git ls-remote --tags --refs --exit-code https://github.com/japaric/cross \
-                       | cut -d/ -f3 \
-                       | grep -E '^v[0.1.0-9.]+$' \
-                       | $sort --version-sort \
-                       | tail -n1)
+    local tag="v0.1.16"
     curl -LSfs https://japaric.github.io/trust/install.sh | \
         sh -s -- \
            --force \
-           --git japaric/cross \
+           --git rust-embedded/cross \
            --tag $tag \
            --target $target
 }

@@ -186,6 +186,7 @@ pub struct ScheduleTaskConfig {
     pub name: String,
     pub cluster: String,
     pub launch_type: Option<String>,
+    pub platform_version: Option<String>,
     pub network_configuration: Option<cloudwatch_events::NetworkConfiguration>,
     pub task_definition: ecs::TaskDefinition,
     pub rule: cloudwatch_events::ScheduleRule,

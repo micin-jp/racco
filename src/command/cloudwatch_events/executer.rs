@@ -71,6 +71,7 @@ pub trait Executer {
                 task_count: Some(1),
                 task_definition_arn: task_definition_arn.to_owned(),
                 launch_type: config.launch_type.to_owned(),
+                platform_version: config.platform_version.to_owned(),
                 network_configuration: config.network_configuration.as_ref().map(|d| d.to_rusoto()),
                 ..Default::default()
             }),
