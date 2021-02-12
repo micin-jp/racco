@@ -1,24 +1,28 @@
 use std::default::Default;
 use std::error;
 
+use rusoto_core::RusotoError;
 use rusoto_events;
-use rusoto_events::{CloudWatchEvents, CloudWatchEventsClient};
+use rusoto_events::{EventBridge, EventBridgeClient};
 
 use config;
 
 pub trait Executer {
-    fn events_client(&self) -> &CloudWatchEventsClient;
+    fn events_client(&self) -> &EventBridgeClient;
 
     fn rule_exists(&self, rule_name: &str) -> Result<bool, Box<error::Error>> {
         trace!("command::cloudwatch_events::Executer::rule_exists");
 
         let req = rusoto_events::DescribeRuleRequest {
             name: rule_name.to_owned(),
+            ..Default::default()
         };
 
         match self.events_client().describe_rule(req).sync() {
             Ok(res) => Ok(res.arn.is_some()),
-            Err(rusoto_events::DescribeRuleError::ResourceNotFound(_)) => Ok(false),
+            Err(RusotoError::Service(rusoto_events::DescribeRuleError::ResourceNotFound(_))) => {
+                Ok(false)
+            }
             Err(e) => Err(Box::new(e)),
         }
     }
