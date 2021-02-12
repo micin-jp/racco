@@ -2,7 +2,7 @@ use std::error;
 
 use rusoto_core::Region;
 use rusoto_ecs::EcsClient;
-use rusoto_events::CloudWatchEventsClient;
+use rusoto_events::EventBridgeClient;
 
 use output;
 
@@ -11,7 +11,7 @@ use command::ecs::Executer as EcsExecuter;
 
 pub struct Executer {
     ecs_client: EcsClient,
-    events_client: CloudWatchEventsClient,
+    events_client: EventBridgeClient,
 }
 
 impl Executer {
@@ -19,7 +19,7 @@ impl Executer {
         trace!("command::schedule_task::delete::Executer::new");
 
         let ecs_client = EcsClient::new(Region::ApNortheast1);
-        let events_client = CloudWatchEventsClient::new(Region::ApNortheast1);
+        let events_client = EventBridgeClient::new(Region::ApNortheast1);
 
         Executer {
             ecs_client: ecs_client,
@@ -49,7 +49,7 @@ impl EcsExecuter for Executer {
 }
 
 impl CloudwatchEventsExecuter for Executer {
-    fn events_client(&self) -> &CloudWatchEventsClient {
+    fn events_client(&self) -> &EventBridgeClient {
         &self.events_client
     }
 }

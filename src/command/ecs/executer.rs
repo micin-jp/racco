@@ -1,6 +1,7 @@
 use std::default::Default;
 use std::error;
 
+use rusoto_core::RusotoError;
 use rusoto_ecs;
 use rusoto_ecs::{Ecs, EcsClient};
 
@@ -59,7 +60,7 @@ pub trait Executer {
                 info!("Completed to describe task_definition successfully");
                 Ok(res.task_definition)
             }
-            Err(rusoto_ecs::DescribeTaskDefinitionError::Client(_)) => {
+            Err(RusotoError::Service(rusoto_ecs::DescribeTaskDefinitionError::Client(_))) => {
                 info!("Not found the task-definition: {}", family);
                 Ok(None)
             }
@@ -125,7 +126,7 @@ pub trait Executer {
                 .service_registries
                 .as_ref()
                 .map(|srs| srs.iter().map(|sr| sr.to_rusoto()).collect()),
-            task_definition: task_definition.to_owned(),
+            task_definition: Some(task_definition.to_owned()),
             platform_version: service_conf.platform_version.to_owned(),
             ..Default::default()
         };

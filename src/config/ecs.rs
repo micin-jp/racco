@@ -200,6 +200,10 @@ pub struct ContainerDefinition {
     pub working_directory: Option<String>,
     pub health_check: Option<HealthCheck>,
     pub linux_parameters: Option<LinuxParameters>,
+    pub depends_on: Option<Vec<ContainerDependency>>,
+    pub firelens_configuration: Option<FirelensConfiguration>,
+    pub start_timeout: Option<i64>,
+    pub stop_timeout: Option<i64>,
 }
 impl ContainerDefinition {
     pub fn to_rusoto(&self) -> rusoto_ecs::ContainerDefinition {
@@ -265,6 +269,41 @@ impl ContainerDefinition {
             working_directory: self.working_directory.to_owned(),
             health_check: self.health_check.as_ref().map(|e| e.to_rusoto()),
             linux_parameters: self.linux_parameters.as_ref().map(|e| e.to_rusoto()),
+            depends_on: self
+                .depends_on
+                .as_ref()
+                .map(|e| e.iter().map(|e0| e0.to_rusoto()).collect()),
+            firelens_configuration: self.firelens_configuration.as_ref().map(|e| e.to_rusoto()),
+            start_timeout: self.start_timeout,
+            stop_timeout: self.stop_timeout,
+        }
+    }
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct ContainerDependency {
+    pub condition: String,
+    pub container_name: String,
+}
+impl ContainerDependency {
+    pub fn to_rusoto(&self) -> rusoto_ecs::ContainerDependency {
+        rusoto_ecs::ContainerDependency {
+            condition: self.condition.to_owned(),
+            container_name: self.container_name.to_owned(),
+        }
+    }
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct FirelensConfiguration {
+    pub options: Option<::std::collections::HashMap<String, String>>,
+    pub type_: String,
+}
+impl FirelensConfiguration {
+    pub fn to_rusoto(&self) -> rusoto_ecs::FirelensConfiguration {
+        rusoto_ecs::FirelensConfiguration {
+            options: self.options.to_owned(),
+            type_: self.type_.to_owned(),
         }
     }
 }
@@ -439,12 +478,17 @@ pub type VolumeFromList = Vec<VolumeFrom>;
 pub struct LogConfiguration {
     pub log_driver: LogDriver,
     pub options: Option<LogConfigurationOptionsMap>,
+    pub secret_options: Option<Vec<Secret>>,
 }
 impl LogConfiguration {
     pub fn to_rusoto(&self) -> rusoto_ecs::LogConfiguration {
         rusoto_ecs::LogConfiguration {
             log_driver: self.log_driver.to_owned(),
             options: self.options.to_owned(),
+            secret_options: self
+                .secret_options
+                .as_ref()
+                .map(|e| e.iter().map(|e0| e0.to_rusoto()).collect()),
         }
     }
 }
@@ -479,6 +523,8 @@ pub struct LinuxParameters {
     pub init_process_enabled: Option<bool>,
     pub shared_memory_size: Option<i64>,
     pub tmpfs: Option<Vec<Tmpfs>>,
+    pub max_swap: Option<i64>,
+    pub swappiness: Option<i64>,
 }
 impl LinuxParameters {
     pub fn to_rusoto(&self) -> rusoto_ecs::LinuxParameters {
@@ -494,6 +540,8 @@ impl LinuxParameters {
                 .tmpfs
                 .as_ref()
                 .map(|e| e.iter().map(|e0| e0.to_rusoto()).collect()),
+            max_swap: self.max_swap,
+            swappiness: self.swappiness,
         }
     }
 }
