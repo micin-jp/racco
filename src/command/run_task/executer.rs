@@ -40,23 +40,23 @@ impl<'c> Executer<'c> {
         trace!("command::run_task::Executer::run");
 
         output::PrintLine::info("Registering a task definition");
-        let task_definition = r#try!(self.register_task_definition(&self.config.task_definition));
-        let task_definition_arn = r#try!(task_definition
+        let task_definition = self.register_task_definition(&self.config.task_definition)?;
+        let task_definition_arn = task_definition
             .task_definition_arn
             .as_ref()
-            .ok_or(Box::new(CommandError::Unknown,),));
+            .ok_or(Box::new(CommandError::Unknown))?;
 
         output::PrintLine::info("Starting to run the task");
-        let running_task = r#try!(self.run_task(
+        let running_task = self.run_task(
             &self.config.cluster,
             &task_definition_arn,
             self.config.launch_type.as_ref().map(|s| s.as_str()),
             self.config.network_configuration.as_ref(),
             self.config.platform_version.as_ref().map(|s| s.as_str()),
-        ));
+        )?;
 
         if !self.options.no_wait {
-            r#try!(self.wait_for_stopped(&running_task));
+            self.wait_for_stopped(&running_task)?;
         }
 
         output::PrintLine::success("Finished running the task");
@@ -82,10 +82,10 @@ impl<'c> Executer<'c> {
                     return Err(Box::new(CommandError::Unknown));
                 }
                 Some(task) => {
-                    let status = r#try!(task
+                    let status = task
                         .last_status
                         .as_ref()
-                        .ok_or(Box::new(CommandError::Unknown)));
+                        .ok_or(Box::new(CommandError::Unknown))?;
                     if status == "STOPPED" {
                         if let Some(reason) = task.stopped_reason.as_ref() {
                             if reason != "Essential container in task exited" {
@@ -97,11 +97,11 @@ impl<'c> Executer<'c> {
                             }
                         }
 
-                        let essential_container = r#try!(task
+                        let essential_container = task
                             .containers
                             .as_ref()
                             .and_then(|c| c.first())
-                            .ok_or(Box::new(CommandError::Unknown)));
+                            .ok_or(Box::new(CommandError::Unknown))?;
 
                         match essential_container.exit_code {
                             Some(0) => return Ok(true), // stopped task successfully!
@@ -133,7 +133,7 @@ impl<'c> Executer<'c> {
             Ok(false)
         }
 
-        let stopped = r#try!(check_stopped(running_task));
+        let stopped = check_stopped(running_task)?;
         if stopped {
             return Ok(());
         }
@@ -151,8 +151,8 @@ impl<'c> Executer<'c> {
             output::PrintLine::info("Waiting for the task to be stopped...");
             sleep(Duration::from_millis(2000));
 
-            let current_task = r#try!(self.describe_task(&self.config.cluster, task_arn));
-            let stopped = r#try!(check_stopped(&current_task));
+            let current_task = self.describe_task(&self.config.cluster, task_arn)?;
+            let stopped = check_stopped(&current_task)?;
             if stopped {
                 return Ok(());
             }

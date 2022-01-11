@@ -22,8 +22,8 @@ impl<'c> Executer<'c> {
     pub fn run(&self) -> Result<(), Box<dyn error::Error>> {
         trace!("command::params::list::Executer::run");
 
-        let params = r#try!(self.params());
-        r#try!(self.print(&params));
+        let params = self.params()?;
+        self.print(&params)?;
 
         Ok(())
     }
@@ -33,12 +33,12 @@ impl<'c> Executer<'c> {
 
         for p in params.iter() {
             if let (Some(name_with_path), Some(value)) = (p.name.as_ref(), p.value.as_ref()) {
-                let name = r#try!(self.strip_path(name_with_path));
-                r#try!(write!(&mut tw, "{}\t{}\n", name, value));
+                let name = self.strip_path(name_with_path)?;
+                write!(&mut tw, "{}\t{}\n", name, value)?;
             }
         }
 
-        r#try!(tw.flush());
+        tw.flush()?;
         Ok(())
     }
 }

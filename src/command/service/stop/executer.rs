@@ -40,14 +40,14 @@ impl<'c> Executer<'c> {
         let service_conf = &self.config.service;
         let cluster = &self.config.cluster;
 
-        let maybe_service = r#try!(self.describe_service(cluster, &service_conf));
+        let maybe_service = self.describe_service(cluster, &service_conf)?;
 
         if maybe_service.is_none() {
             output::PrintLine::info("Service has not been exist.");
             return Ok(());
         }
         let maybe_task_definition =
-            r#try!(self.describe_latest_task_definition(&service_conf.task_definition.family,));
+            self.describe_latest_task_definition(&service_conf.task_definition.family)?;
         if maybe_task_definition.is_none() {
             output::PrintLine::error("Could not find task_definition");
             return Err(Box::new(CommandError::Unknown));
@@ -68,7 +68,7 @@ impl<'c> Executer<'c> {
         };
 
         output::PrintLine::info("Starting to update the service");
-        r#try!(self.update_service(cluster, &zero_task_service, &task_definition,));
+        self.update_service(cluster, &zero_task_service, &task_definition)?;
         output::PrintLine::info("Finished updating the service");
 
         // if !self.options.no_wait {

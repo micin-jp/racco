@@ -35,7 +35,7 @@ pub trait Executer {
             ..Default::default()
         };
 
-        r#try!(self.events_client().delete_rule(req).sync());
+        self.events_client().delete_rule(req).sync()?;
         info!("Completed to delete-rule successfully");
 
         Ok(())
@@ -53,7 +53,7 @@ pub trait Executer {
             ..Default::default()
         };
 
-        r#try!(self.events_client().put_rule(req).sync());
+        self.events_client().put_rule(req).sync()?;
         info!("Completed to put-rule successfully");
 
         Ok(())
@@ -89,7 +89,7 @@ pub trait Executer {
             ..Default::default()
         };
 
-        r#try!(self.events_client().put_targets(req).sync());
+        self.events_client().put_targets(req).sync()?;
         info!("Completed to put-targets successfully");
 
         Ok(())
@@ -103,14 +103,14 @@ pub trait Executer {
             ..Default::default()
         };
 
-        let res = r#try!(self.events_client().list_targets_by_rule(req).sync());
+        let res = self.events_client().list_targets_by_rule(req).sync()?;
         if let Some(targets) = res.targets {
             let req = rusoto_events::RemoveTargetsRequest {
                 rule: rule_name.to_owned(),
                 ids: targets.iter().map(|t| t.id.to_owned()).collect(),
                 ..Default::default()
             };
-            r#try!(self.events_client().remove_targets(req).sync());
+            self.events_client().remove_targets(req).sync()?;
         }
 
         Ok(())

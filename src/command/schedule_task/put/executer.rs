@@ -33,18 +33,18 @@ impl<'c> Executer<'c> {
     pub fn run(&self) -> Result<(), Box<dyn error::Error>> {
         trace!("command::schedule_task::put::Executer::run");
 
-        let maybe_ecs_cluster = r#try!(self.describe_cluster(&self.config.cluster));
-        let ecs_cluster = r#try!(maybe_ecs_cluster.ok_or(Box::new(CommandError::Unknown)));
-        let ecs_cluster_arn = r#try!(ecs_cluster
+        let maybe_ecs_cluster = self.describe_cluster(&self.config.cluster)?;
+        let ecs_cluster = maybe_ecs_cluster.ok_or(Box::new(CommandError::Unknown))?;
+        let ecs_cluster_arn = ecs_cluster
             .cluster_arn
             .as_ref()
-            .ok_or(Box::new(CommandError::Unknown,)));
+            .ok_or(Box::new(CommandError::Unknown))?;
 
-        let task_definition = r#try!(self.register_task_definition(&self.config.task_definition));
-        let task_definition_arn = r#try!(task_definition
+        let task_definition = self.register_task_definition(&self.config.task_definition)?;
+        let task_definition_arn = task_definition
             .task_definition_arn
             .as_ref()
-            .ok_or(Box::new(CommandError::Unknown,),));
+            .ok_or(Box::new(CommandError::Unknown))?;
 
         let role_arn = self
             .config
@@ -52,13 +52,8 @@ impl<'c> Executer<'c> {
             .as_ref()
             .map(String::as_str);
 
-        r#try!(self.put_rule(&self.config.rule));
-        r#try!(self.put_ecs_task_target(
-            role_arn,
-            ecs_cluster_arn,
-            task_definition_arn,
-            &self.config,
-        ));
+        self.put_rule(&self.config.rule)?;
+        self.put_ecs_task_target(role_arn, ecs_cluster_arn, task_definition_arn, &self.config)?;
 
         output::PrintLine::success("Finished putting the scheduled task");
         Ok(())

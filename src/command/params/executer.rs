@@ -56,7 +56,7 @@ pub trait Executer {
         };
 
         let client = self.client();
-        let mut res = r#try!(client.get_parameters_by_path(req).sync());
+        let mut res = client.get_parameters_by_path(req).sync()?;
 
         let mut params: Vec<rusoto_ssm::Parameter> = Vec::new();
         if let Some(new_params) = res.parameters {
@@ -71,7 +71,7 @@ pub trait Executer {
                 next_token: Some(next_token),
                 ..Default::default()
             };
-            res = r#try!(client.get_parameters_by_path(req).sync());
+            res = client.get_parameters_by_path(req).sync()?;
 
             if let Some(new_params) = res.parameters {
                 params.extend(new_params.into_iter());

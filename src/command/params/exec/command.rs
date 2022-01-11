@@ -51,7 +51,7 @@ impl<'c> Command<'c> {
         trace!("command::params::exec::Command::run");
         if let Some(params_config) = self.config.params.as_ref() {
             let exec = Executer::from_config(params_config);
-            r#try!(exec.run(&self.program, &self.args));
+            exec.run(&self.program, &self.args)?;
         }
         Ok(())
     }

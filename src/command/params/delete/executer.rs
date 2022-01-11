@@ -29,7 +29,7 @@ impl<'c> Executer<'c> {
         };
 
         let client = self.client();
-        r#try!(client.delete_parameter(req).sync());
+        client.delete_parameter(req).sync()?;
 
         output::PrintLine::success("Finished deleting the parameter");
         Ok(())

@@ -27,7 +27,7 @@ impl<'c> Executer<'c> {
         trace!("command::params::exec::Executer::run");
 
         info!("exec: {} {}", program, args.join(" "));
-        let params = r#try!(self.params());
+        let params = self.params()?;
         let mut cmd = process::Command::new(program);
 
         cmd.args(args);
@@ -42,8 +42,8 @@ impl<'c> Executer<'c> {
         }
 
         // TODO: Handle signals
-        let mut child = r#try!(cmd.spawn());
-        let output = r#try!(child.wait());
+        let mut child = cmd.spawn()?;
+        let output = child.wait()?;
 
         if output.success() {
             Ok(())

@@ -32,7 +32,7 @@ impl<'c> Executer<'c> {
         };
 
         let client = self.client();
-        let res = r#try!(client.get_parameter(req).sync());
+        let res = client.get_parameter(req).sync()?;
 
         if let Some(params) = res.parameter {
             self.print(&params);

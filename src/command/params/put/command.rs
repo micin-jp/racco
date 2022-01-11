@@ -35,7 +35,7 @@ impl<'c> Command<'c> {
         if let Some(params_config) = self.config.params.as_ref() {
             let exec = Executer::from_config(&params_config);
 
-            r#try!(exec.run(self.name, self.value));
+            exec.run(self.name, self.value)?;
         }
         Ok(())
     }
