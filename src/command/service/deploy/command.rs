@@ -62,7 +62,7 @@ impl<'c> Command<'c> {
                     no_wait: self.no_wait,
                 };
                 let ecs_deploy_cmd = Executer::from_config(&service_config, &options);
-                try!(ecs_deploy_cmd.run());
+                r#try!(ecs_deploy_cmd.run());
             }
         }
 

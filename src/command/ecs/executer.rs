@@ -27,7 +27,7 @@ pub trait Executer {
             ..Default::default()
         };
 
-        let res = try!(self.ecs_client().describe_clusters(req).sync());
+        let res = r#try!(self.ecs_client().describe_clusters(req).sync());
         info!("Completed to describe clusters successfully");
 
         match res.clusters {
@@ -93,7 +93,7 @@ pub trait Executer {
             ..Default::default()
         };
 
-        let res = try!(self.ecs_client().register_task_definition(req).sync());
+        let res = r#try!(self.ecs_client().register_task_definition(req).sync());
         info!("Completed to register task_definition successfully");
 
         res.task_definition.ok_or(Box::new(CommandError::Unknown))
@@ -131,7 +131,7 @@ pub trait Executer {
             ..Default::default()
         };
 
-        let res = try!(self.ecs_client().create_service(req).sync());
+        let res = r#try!(self.ecs_client().create_service(req).sync());
         info!("Completed to create service successfully");
 
         res.service.ok_or(Box::new(CommandError::Unknown))
@@ -150,7 +150,7 @@ pub trait Executer {
             ..Default::default()
         };
 
-        let res = try!(self.ecs_client().describe_services(req).sync());
+        let res = r#try!(self.ecs_client().describe_services(req).sync());
         info!("Completed to describe services successfully");
 
         match res.services {
@@ -196,7 +196,7 @@ pub trait Executer {
             ..Default::default()
         };
 
-        let res = try!(self.ecs_client().update_service(req).sync());
+        let res = r#try!(self.ecs_client().update_service(req).sync());
         info!("Completed to update service successfully");
 
         let service = res.service.map(|s| s.to_owned());
@@ -214,7 +214,7 @@ pub trait Executer {
             ..Default::default()
         };
 
-        let result = try!(self.ecs_client().describe_tasks(req).sync());
+        let result = r#try!(self.ecs_client().describe_tasks(req).sync());
         debug!("{:?}", result);
 
         let failure = result
@@ -248,7 +248,7 @@ pub trait Executer {
             ..Default::default()
         };
 
-        let result = try!(self.ecs_client().run_task(req).sync());
+        let result = r#try!(self.ecs_client().run_task(req).sync());
         info!("Completed to run task successfully");
 
         debug!("{:?}", result);

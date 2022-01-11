@@ -45,7 +45,7 @@ impl<'c> Command<'c> {
                     no_wait: self.no_wait,
                 };
                 let ecs_run_task_cmd = Executer::from_config(&run_task_config, &options);
-                try!(ecs_run_task_cmd.run());
+                r#try!(ecs_run_task_cmd.run());
             }
         }
 

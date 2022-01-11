@@ -44,7 +44,7 @@ impl<'c> Executer<'c> {
         let cluster = &self.config.cluster;
 
         let maybe_latest_task_definition =
-            try!(self.describe_latest_task_definition(&service_conf.task_definition.family,));
+            r#try!(self.describe_latest_task_definition(&service_conf.task_definition.family,));
 
         let task_definition = if let Some(latest_task_definition) = maybe_latest_task_definition {
             if self.detect_task_definition_changes(
@@ -52,52 +52,53 @@ impl<'c> Executer<'c> {
                 &latest_task_definition,
             ) {
                 output::PrintLine::info("Registering a task definition");
-                try!(self.register_task_definition(&service_conf.task_definition))
+                r#try!(self.register_task_definition(&service_conf.task_definition))
             } else {
                 latest_task_definition
             }
         } else {
             output::PrintLine::info("Registering a task definition");
-            try!(self.register_task_definition(&service_conf.task_definition))
+            r#try!(self.register_task_definition(&service_conf.task_definition))
         };
 
-        let task_definition_arn = try!(
-            task_definition
-                .task_definition_arn
-                .as_ref()
-                .ok_or(Box::new(CommandError::Unknown,),)
-        );
+        let task_definition_arn = r#try!(task_definition
+            .task_definition_arn
+            .as_ref()
+            .ok_or(Box::new(CommandError::Unknown,),));
 
-        let maybe_service = try!(self.describe_service(cluster, &service_conf));
+        let maybe_service = r#try!(self.describe_service(cluster, &service_conf));
 
         let _service: rusoto_ecs::Service = match maybe_service {
             Some(s) => s,
             None => {
                 output::PrintLine::info("Service has not been exist. Creating...");
-                try!(self.create_service(cluster, &service_conf, &task_definition_arn,))
+                r#try!(self.create_service(cluster, &service_conf, &task_definition_arn,))
             }
         };
 
         output::PrintLine::info("Starting to update the service");
-        try!(self.update_service(cluster, &service_conf, &task_definition,));
+        r#try!(self.update_service(cluster, &service_conf, &task_definition,));
         output::PrintLine::info("Finished updating the service");
 
         if !self.options.no_wait {
-            try!(self.wait_for_green(&service_conf));
+            r#try!(self.wait_for_green(&service_conf));
         }
 
         output::PrintLine::success("Deployment completed");
         Ok(())
     }
 
-    fn wait_for_green(&self, service_conf: &config::ecs::Service) -> Result<(), Box<dyn error::Error>> {
+    fn wait_for_green(
+        &self,
+        service_conf: &config::ecs::Service,
+    ) -> Result<(), Box<dyn error::Error>> {
         trace!("command::service::deploy::Executer::wait_for_green");
         let cluster = &self.config.cluster;
 
         // TODO: Timeout
         loop {
-            let maybe_service = try!(self.describe_service(cluster, service_conf));
-            let service = try!(maybe_service.ok_or(Box::new(CommandError::Unknown)));
+            let maybe_service = r#try!(self.describe_service(cluster, service_conf));
+            let service = r#try!(maybe_service.ok_or(Box::new(CommandError::Unknown)));
 
             let maybe_primary = service.deployments.as_ref().and_then(|deployments| {
                 deployments

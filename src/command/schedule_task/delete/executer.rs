@@ -30,9 +30,9 @@ impl Executer {
     pub fn run(&self, rule_name: &str) -> Result<(), Box<dyn error::Error>> {
         trace!("command::schedule_task::delete::Executer::run");
 
-        if try!(self.rule_exists(rule_name)) {
-            try!(self.remove_targets(rule_name));
-            try!(self.delete_rule(rule_name));
+        if r#try!(self.rule_exists(rule_name)) {
+            r#try!(self.remove_targets(rule_name));
+            r#try!(self.delete_rule(rule_name));
             output::PrintLine::success("Finished deleting the scheduled task");
         } else {
             output::PrintLine::success("The rule does not exists");

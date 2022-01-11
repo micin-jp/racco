@@ -51,7 +51,7 @@ impl<'c> Command<'c> {
                 }
 
                 let schedule_put_exec = Executer::from_config(&schedule_config);
-                try!(schedule_put_exec.run());
+                r#try!(schedule_put_exec.run());
             }
         }
 

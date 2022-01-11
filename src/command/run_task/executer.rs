@@ -41,16 +41,14 @@ impl<'c> Executer<'c> {
         trace!("command::run_task::Executer::run");
 
         output::PrintLine::info("Registering a task definition");
-        let task_definition = try!(self.register_task_definition(&self.config.task_definition));
-        let task_definition_arn = try!(
-            task_definition
-                .task_definition_arn
-                .as_ref()
-                .ok_or(Box::new(CommandError::Unknown,),)
-        );
+        let task_definition = r#try!(self.register_task_definition(&self.config.task_definition));
+        let task_definition_arn = r#try!(task_definition
+            .task_definition_arn
+            .as_ref()
+            .ok_or(Box::new(CommandError::Unknown,),));
 
         output::PrintLine::info("Starting to run the task");
-        let running_task = try!(self.run_task(
+        let running_task = r#try!(self.run_task(
             &self.config.cluster,
             &task_definition_arn,
             self.config.launch_type.as_ref().map(|s| s.as_str()),
@@ -59,14 +57,17 @@ impl<'c> Executer<'c> {
         ));
 
         if !self.options.no_wait {
-            try!(self.wait_for_stopped(&running_task));
+            r#try!(self.wait_for_stopped(&running_task));
         }
 
         output::PrintLine::success("Finished running the task");
         Ok(())
     }
 
-    fn wait_for_stopped(&self, running_task: &TaskDescription) -> Result<(), Box<dyn error::Error>> {
+    fn wait_for_stopped(
+        &self,
+        running_task: &TaskDescription,
+    ) -> Result<(), Box<dyn error::Error>> {
         trace!("command::run-task::Executer::wait_for_stopped");
 
         fn check_stopped(current_task: &TaskDescription) -> Result<bool, Box<dyn error::Error>> {
@@ -82,11 +83,10 @@ impl<'c> Executer<'c> {
                     return Err(Box::new(CommandError::Unknown));
                 }
                 Some(task) => {
-                    let status = try!(
-                        task.last_status
-                            .as_ref()
-                            .ok_or(Box::new(CommandError::Unknown))
-                    );
+                    let status = r#try!(task
+                        .last_status
+                        .as_ref()
+                        .ok_or(Box::new(CommandError::Unknown)));
                     if status == "STOPPED" {
                         if let Some(reason) = task.stopped_reason.as_ref() {
                             if reason != "Essential container in task exited" {
@@ -98,12 +98,11 @@ impl<'c> Executer<'c> {
                             }
                         }
 
-                        let essential_container = try!(
-                            task.containers
-                                .as_ref()
-                                .and_then(|c| c.first())
-                                .ok_or(Box::new(CommandError::Unknown))
-                        );
+                        let essential_container = r#try!(task
+                            .containers
+                            .as_ref()
+                            .and_then(|c| c.first())
+                            .ok_or(Box::new(CommandError::Unknown)));
 
                         match essential_container.exit_code {
                             Some(0) => return Ok(true), // stopped task successfully!
@@ -135,7 +134,7 @@ impl<'c> Executer<'c> {
             Ok(false)
         }
 
-        let stopped = try!(check_stopped(running_task));
+        let stopped = r#try!(check_stopped(running_task));
         if stopped {
             return Ok(());
         }
@@ -153,8 +152,8 @@ impl<'c> Executer<'c> {
             output::PrintLine::info("Waiting for the task to be stopped...");
             sleep(Duration::from_millis(2000));
 
-            let current_task = try!(self.describe_task(&self.config.cluster, task_arn));
-            let stopped = try!(check_stopped(&current_task));
+            let current_task = r#try!(self.describe_task(&self.config.cluster, task_arn));
+            let stopped = r#try!(check_stopped(&current_task));
             if stopped {
                 return Ok(());
             }

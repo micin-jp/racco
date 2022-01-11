@@ -66,20 +66,20 @@ impl Config {
     ) -> Result<Config, Box<dyn error::Error>> {
         debug!("Config::from_file");
 
-        let contents = try!(Self::load_file(&file));
-        let tmpl_vars = try!(Self::load_template_variables(
+        let contents = r#try!(Self::load_file(&file));
+        let tmpl_vars = r#try!(Self::load_template_variables(
             template_variable_map,
             template_variable_files
         ));
 
-        let config = try!(Self::new(&contents, &tmpl_vars));
+        let config = r#try!(Self::new(&contents, &tmpl_vars));
         let current_ver_str: &str = env!("CARGO_PKG_VERSION");
-        try!(config.validate_version(current_ver_str));
+        r#try!(config.validate_version(current_ver_str));
         Ok(config)
     }
 
     fn new(contents: &str, tmpl_vars: &serde_json::Value) -> Result<Config, Box<dyn error::Error>> {
-        let rendered_contents = try!(Self::apply_template_vars(contents, tmpl_vars));
+        let rendered_contents = r#try!(Self::apply_template_vars(contents, tmpl_vars));
         debug!("Config::from_file - Yaml file: {}", rendered_contents);
 
         match serde_yaml::from_str::<Config>(&rendered_contents) {
@@ -95,10 +95,10 @@ impl Config {
     }
 
     fn load_file(file: &str) -> Result<String, Box<dyn error::Error>> {
-        let mut f = try!(File::open(file));
+        let mut f = r#try!(File::open(file));
         let mut contents = String::new();
 
-        try!(f.read_to_string(&mut contents));
+        r#try!(f.read_to_string(&mut contents));
 
         Ok(contents)
     }
@@ -111,12 +111,12 @@ impl Config {
 
         if let Some(tmpl_var_files) = template_variable_files {
             for tmpl_var_file in tmpl_var_files {
-                let mut var_file = try!(File::open(tmpl_var_file));
+                let mut var_file = r#try!(File::open(tmpl_var_file));
                 let mut var_contents = String::new();
 
-                try!(var_file.read_to_string(&mut var_contents));
+                r#try!(var_file.read_to_string(&mut var_contents));
 
-                let j = try!(serde_yaml::from_str::<serde_json::Value>(&var_contents));
+                let j = r#try!(serde_yaml::from_str::<serde_json::Value>(&var_contents));
                 for (k, v) in j.as_object().unwrap() {
                     vars[k] = v.to_owned()
                 }
@@ -138,7 +138,7 @@ impl Config {
         vars: &serde_json::Value,
     ) -> Result<String, Box<dyn error::Error>> {
         let handlebars = Handlebars::new();
-        let rendered = try!(handlebars.template_render(contents, vars));
+        let rendered = r#try!(handlebars.template_render(contents, vars));
         Ok(rendered)
     }
 
@@ -147,8 +147,8 @@ impl Config {
             return Ok(());
         }
 
-        let current_ver = try!(Version::parse(current_ver_str));
-        let version_req = try!(VersionReq::parse(self.version.as_ref().unwrap().as_str()));
+        let current_ver = r#try!(Version::parse(current_ver_str));
+        let version_req = r#try!(VersionReq::parse(self.version.as_ref().unwrap().as_str()));
 
         if version_req.matches(&current_ver) {
             Ok(())

@@ -38,7 +38,7 @@ impl<'c> Executer<'c> {
         };
 
         let client = self.client();
-        try!(client.put_parameter(req).sync());
+        r#try!(client.put_parameter(req).sync());
 
         output::PrintLine::success("Finished put the parameter");
         Ok(())
