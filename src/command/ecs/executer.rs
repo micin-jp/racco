@@ -5,8 +5,8 @@ use rusoto_core::RusotoError;
 use rusoto_ecs;
 use rusoto_ecs::{Ecs, EcsClient};
 
-use command::error::CommandError;
-use config;
+use crate::command::error::CommandError;
+use crate::config;
 
 pub struct TaskDescription {
     pub task: Option<rusoto_ecs::Task>,

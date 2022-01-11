@@ -6,7 +6,7 @@ use tabwriter::TabWriter;
 use rusoto_ssm;
 
 use super::super::Executer as ParamsExecuter;
-use config;
+use crate::config;
 
 pub struct Executer<'c> {
     config: &'c config::command::ParamsConfig,

@@ -3,11 +3,10 @@ use std::error;
 use rusoto_core::Region;
 use rusoto_ecs::EcsClient;
 
-use config;
-use output;
-
-use command::ecs::Executer as EcsExecuter;
-use command::error::CommandError;
+use crate::command::ecs::Executer as EcsExecuter;
+use crate::command::error::CommandError;
+use crate::config;
+use crate::output;
 
 pub struct ExecuterOptions {
     pub no_wait: bool,

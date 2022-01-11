@@ -1,9 +1,9 @@
 use std::error;
 use std::process;
 
-use command::error::CommandError;
-use config;
-use output;
+use crate::command::error::CommandError;
+use crate::config;
+use crate::output;
 
 use super::super::Executer as ParamsExecuter;
 use super::{Arguments, Program};

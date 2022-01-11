@@ -3,7 +3,8 @@ use std::error;
 use clap;
 
 use super::executer::Executer;
-use config;
+
+use crate::config;
 
 pub struct Command<'c> {
     config: &'c config::command::Config,

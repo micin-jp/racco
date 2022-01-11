@@ -1,7 +1,8 @@
 use std::error;
 
 use clap;
-use config;
+
+use crate::config;
 
 use super::executer::Executer;
 

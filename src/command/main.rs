@@ -4,9 +4,6 @@ use std::error;
 
 use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 
-use config;
-use output;
-
 use super::error::CommandError;
 
 use super::configtest;
@@ -14,6 +11,9 @@ use super::params;
 use super::run_task;
 use super::schedule_task;
 use super::service;
+
+use crate::config;
+use crate::output;
 
 pub struct MainCommand {}
 
@@ -238,7 +238,9 @@ impl MainCommand {
 
         let template_variables = MainCommand::parse_args_template_variables(&matches);
 
-        let template_variable_files = matches.values_of("CONFIG_TEMPLATE_VARIABLE_FILE").map(|v| v.collect());
+        let template_variable_files = matches
+            .values_of("CONFIG_TEMPLATE_VARIABLE_FILE")
+            .map(|v| v.collect());
 
         match config::command::Config::from_file(
             config_file.as_str(),

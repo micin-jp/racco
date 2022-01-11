@@ -5,7 +5,7 @@ use rusoto_core::RusotoError;
 use rusoto_events;
 use rusoto_events::{EventBridge, EventBridgeClient};
 
-use config;
+use crate::config;
 
 pub trait Executer {
     fn events_client(&self) -> &EventBridgeClient;

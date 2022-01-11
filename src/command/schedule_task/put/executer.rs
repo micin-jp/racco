@@ -4,12 +4,11 @@ use rusoto_core::Region;
 use rusoto_ecs::EcsClient;
 use rusoto_events::EventBridgeClient;
 
-use config;
-use output;
-
-use command::cloudwatch_events::Executer as CloudwatchEventsExecuter;
-use command::ecs::Executer as EcsExecuter;
-use command::error::CommandError;
+use crate::command::cloudwatch_events::Executer as CloudwatchEventsExecuter;
+use crate::command::ecs::Executer as EcsExecuter;
+use crate::command::error::CommandError;
+use crate::config;
+use crate::output;
 
 pub struct Executer<'c> {
     ecs_client: EcsClient,

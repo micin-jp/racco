@@ -1,10 +1,10 @@
-use config;
 use rusoto_core::Region;
 use rusoto_ssm;
 use rusoto_ssm::{Ssm, SsmClient};
 use std::error;
 
-use command::error::CommandError;
+use crate::command::error::CommandError;
+use crate::config;
 
 pub trait Executer {
     fn client(&self) -> SsmClient {

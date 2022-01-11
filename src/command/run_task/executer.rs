@@ -5,12 +5,11 @@ use std::time::Duration;
 use rusoto_core::Region;
 use rusoto_ecs::EcsClient;
 
-use config;
-use output;
-
 use super::super::error::CommandError;
-use command::ecs::Executer as EcsExecuter;
-use command::ecs::TaskDescription;
+use crate::command::ecs::Executer as EcsExecuter;
+use crate::command::ecs::TaskDescription;
+use crate::config;
+use crate::output;
 
 pub struct ExecuterOptions {
     pub no_wait: bool,
