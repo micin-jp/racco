@@ -31,7 +31,7 @@ impl<'c> Executer<'c> {
         let req = rusoto_ssm::PutParameterRequest {
             name: self.name_with_path(name),
             value: value.to_owned(),
-            type_: type_,
+            type_: Some(type_),
             key_id: key_id,
             overwrite: Some(true),
             ..Default::default()
