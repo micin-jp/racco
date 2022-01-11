@@ -26,12 +26,12 @@ impl Executer {
         }
     }
 
-    pub fn run(&self, rule_name: &str) -> Result<(), Box<dyn error::Error>> {
+    pub async fn run(&self, rule_name: &str) -> Result<(), Box<dyn error::Error>> {
         trace!("command::schedule_task::delete::Executer::run");
 
-        if self.rule_exists(rule_name)? {
-            self.remove_targets(rule_name)?;
-            self.delete_rule(rule_name)?;
+        if self.rule_exists(rule_name).await? {
+            self.remove_targets(rule_name).await?;
+            self.delete_rule(rule_name).await?;
             output::PrintLine::success("Finished deleting the scheduled task");
         } else {
             output::PrintLine::success("The rule does not exists");

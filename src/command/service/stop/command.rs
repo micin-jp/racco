@@ -41,7 +41,7 @@ impl<'c> Command<'c> {
         }
     }
 
-    pub fn run(&self) -> Result<(), Box<dyn error::Error>> {
+    pub async fn run(&self) -> Result<(), Box<dyn error::Error>> {
         trace!("command::service::stop::Command::run");
 
         if let Some(service_config_group) = self.config.service.as_ref() {
@@ -63,7 +63,7 @@ impl<'c> Command<'c> {
                     no_wait: self.no_wait,
                 };
                 let ecs_stop_cmd = Executer::from_config(&service_config, &options);
-                ecs_stop_cmd.run()?;
+                ecs_stop_cmd.run().await?;
             }
         }
 

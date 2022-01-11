@@ -884,6 +884,7 @@ dependencies = [
  "async-trait",
  "clap",
  "env_logger",
+ "futures",
  "handlebars",
  "hyper 0.10.15",
  "log 0.3.8",

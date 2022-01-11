@@ -19,10 +19,10 @@ impl<'c> Executer<'c> {
         Executer { config: config }
     }
 
-    pub fn run(&self) -> Result<(), Box<dyn error::Error>> {
+    pub async fn run(&self) -> Result<(), Box<dyn error::Error>> {
         trace!("command::params::list::Executer::run");
 
-        let params = self.params()?;
+        let params = self.params().await?;
         self.print(&params)?;
 
         Ok(())

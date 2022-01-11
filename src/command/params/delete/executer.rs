@@ -20,7 +20,7 @@ impl<'c> Executer<'c> {
         Executer { config: config }
     }
 
-    pub fn run(&self, name: &str) -> Result<(), Box<dyn error::Error>> {
+    pub async fn run(&self, name: &str) -> Result<(), Box<dyn error::Error>> {
         trace!("command::params::delete::Executer::run");
 
         let req = rusoto_ssm::DeleteParameterRequest {
@@ -29,7 +29,7 @@ impl<'c> Executer<'c> {
         };
 
         let client = self.client();
-        client.delete_parameter(req).sync()?;
+        client.delete_parameter(req).await?;
 
         output::PrintLine::success("Finished deleting the parameter");
         Ok(())

@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use std::default::Default;
 use std::error;
 
@@ -13,10 +14,11 @@ pub struct TaskDescription {
     pub failure: Option<rusoto_ecs::Failure>,
 }
 
+#[async_trait]
 pub trait Executer {
     fn ecs_client(&self) -> &EcsClient;
 
-    fn describe_cluster(
+    async fn describe_cluster(
         &self,
         name: &str,
     ) -> Result<Option<rusoto_ecs::Cluster>, Box<dyn error::Error>> {
@@ -27,7 +29,7 @@ pub trait Executer {
             ..Default::default()
         };
 
-        let res = self.ecs_client().describe_clusters(req).sync()?;
+        let res = self.ecs_client().describe_clusters(req).await?;
         info!("Completed to describe clusters successfully");
 
         match res.clusters {
@@ -44,7 +46,7 @@ pub trait Executer {
         }
     }
 
-    fn describe_latest_task_definition(
+    async fn describe_latest_task_definition(
         &self,
         family: &str,
     ) -> Result<Option<rusoto_ecs::TaskDefinition>, Box<dyn error::Error>> {
@@ -55,7 +57,7 @@ pub trait Executer {
             ..Default::default()
         };
 
-        match self.ecs_client().describe_task_definition(req).sync() {
+        match self.ecs_client().describe_task_definition(req).await {
             Ok(res) => {
                 info!("Completed to describe task_definition successfully");
                 Ok(res.task_definition)
@@ -68,7 +70,7 @@ pub trait Executer {
         }
     }
 
-    fn register_task_definition(
+    async fn register_task_definition(
         &self,
         task_definition_conf: &config::ecs::TaskDefinition,
     ) -> Result<rusoto_ecs::TaskDefinition, Box<dyn error::Error>> {
@@ -93,13 +95,13 @@ pub trait Executer {
             ..Default::default()
         };
 
-        let res = self.ecs_client().register_task_definition(req).sync()?;
+        let res = self.ecs_client().register_task_definition(req).await?;
         info!("Completed to register task_definition successfully");
 
         res.task_definition.ok_or(Box::new(CommandError::Unknown))
     }
 
-    fn create_service(
+    async fn create_service(
         &self,
         cluster: &str,
         service_conf: &config::ecs::Service,
@@ -131,13 +133,13 @@ pub trait Executer {
             ..Default::default()
         };
 
-        let res = self.ecs_client().create_service(req).sync()?;
+        let res = self.ecs_client().create_service(req).await?;
         info!("Completed to create service successfully");
 
         res.service.ok_or(Box::new(CommandError::Unknown))
     }
 
-    fn describe_service(
+    async fn describe_service(
         &self,
         cluster: &str,
         service_conf: &config::ecs::Service,
@@ -150,7 +152,7 @@ pub trait Executer {
             ..Default::default()
         };
 
-        let res = self.ecs_client().describe_services(req).sync()?;
+        let res = self.ecs_client().describe_services(req).await?;
         info!("Completed to describe services successfully");
 
         match res.services {
@@ -167,7 +169,7 @@ pub trait Executer {
         }
     }
 
-    fn update_service(
+    async fn update_service(
         &self,
         cluster: &str,
         service_conf: &config::ecs::Service,
@@ -196,14 +198,14 @@ pub trait Executer {
             ..Default::default()
         };
 
-        let res = self.ecs_client().update_service(req).sync()?;
+        let res = self.ecs_client().update_service(req).await?;
         info!("Completed to update service successfully");
 
         let service = res.service.map(|s| s.to_owned());
         service.ok_or(Box::new(CommandError::Unknown))
     }
 
-    fn describe_task(
+    async fn describe_task(
         &self,
         cluster: &str,
         task_arn: &str,
@@ -214,7 +216,7 @@ pub trait Executer {
             ..Default::default()
         };
 
-        let result = self.ecs_client().describe_tasks(req).sync()?;
+        let result = self.ecs_client().describe_tasks(req).await?;
         debug!("{:?}", result);
 
         let failure = result
@@ -231,7 +233,7 @@ pub trait Executer {
         }
     }
 
-    fn run_task(
+    async fn run_task(
         &self,
         cluster: &str,
         task_definition_arn: &str,
@@ -248,7 +250,7 @@ pub trait Executer {
             ..Default::default()
         };
 
-        let result = self.ecs_client().run_task(req).sync()?;
+        let result = self.ecs_client().run_task(req).await?;
         info!("Completed to run task successfully");
 
         debug!("{:?}", result);

@@ -19,7 +19,7 @@ impl<'c> Executer<'c> {
         Executer { config: config }
     }
 
-    pub fn run(
+    pub async fn run(
         &self,
         program: &'c Program<'c>,
         args: &'c Arguments<'c>,
@@ -27,7 +27,7 @@ impl<'c> Executer<'c> {
         trace!("command::params::exec::Executer::run");
 
         info!("exec: {} {}", program, args.join(" "));
-        let params = self.params()?;
+        let params = self.params().await?;
         let mut cmd = process::Command::new(program);
 
         cmd.args(args);

@@ -33,7 +33,7 @@ impl<'c> Command<'c> {
         }
     }
 
-    pub fn run(&self) -> Result<(), Box<dyn error::Error>> {
+    pub async fn run(&self) -> Result<(), Box<dyn error::Error>> {
         trace!("command::run_task::Command::run");
 
         if let Some(run_task_config_group) = self.config.run_task.as_ref() {
@@ -46,7 +46,7 @@ impl<'c> Command<'c> {
                     no_wait: self.no_wait,
                 };
                 let ecs_run_task_cmd = Executer::from_config(&run_task_config, &options);
-                ecs_run_task_cmd.run()?;
+                ecs_run_task_cmd.run().await?;
             }
         }
 

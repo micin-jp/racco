@@ -19,7 +19,7 @@ impl<'c> Executer<'c> {
         Executer { config: config }
     }
 
-    pub fn run(&self, name: &str) -> Result<(), Box<dyn error::Error>> {
+    pub async fn run(&self, name: &str) -> Result<(), Box<dyn error::Error>> {
         trace!("command::params::get::Executer::run");
 
         let name_with_path = self.name_with_path(name);
@@ -32,7 +32,7 @@ impl<'c> Executer<'c> {
         };
 
         let client = self.client();
-        let res = client.get_parameter(req).sync()?;
+        let res = client.get_parameter(req).await?;
 
         if let Some(params) = res.parameter {
             self.print(&params);

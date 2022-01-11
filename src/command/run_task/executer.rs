@@ -36,34 +36,38 @@ impl<'c> Executer<'c> {
         }
     }
 
-    pub fn run(&self) -> Result<(), Box<dyn error::Error>> {
+    pub async fn run(&self) -> Result<(), Box<dyn error::Error>> {
         trace!("command::run_task::Executer::run");
 
         output::PrintLine::info("Registering a task definition");
-        let task_definition = self.register_task_definition(&self.config.task_definition)?;
+        let task_definition = self
+            .register_task_definition(&self.config.task_definition)
+            .await?;
         let task_definition_arn = task_definition
             .task_definition_arn
             .as_ref()
             .ok_or(Box::new(CommandError::Unknown))?;
 
         output::PrintLine::info("Starting to run the task");
-        let running_task = self.run_task(
-            &self.config.cluster,
-            &task_definition_arn,
-            self.config.launch_type.as_ref().map(|s| s.as_str()),
-            self.config.network_configuration.as_ref(),
-            self.config.platform_version.as_ref().map(|s| s.as_str()),
-        )?;
+        let running_task = self
+            .run_task(
+                &self.config.cluster,
+                &task_definition_arn,
+                self.config.launch_type.as_ref().map(|s| s.as_str()),
+                self.config.network_configuration.as_ref(),
+                self.config.platform_version.as_ref().map(|s| s.as_str()),
+            )
+            .await?;
 
         if !self.options.no_wait {
-            self.wait_for_stopped(&running_task)?;
+            self.wait_for_stopped(&running_task).await?;
         }
 
         output::PrintLine::success("Finished running the task");
         Ok(())
     }
 
-    fn wait_for_stopped(
+    async fn wait_for_stopped(
         &self,
         running_task: &TaskDescription,
     ) -> Result<(), Box<dyn error::Error>> {
@@ -151,7 +155,7 @@ impl<'c> Executer<'c> {
             output::PrintLine::info("Waiting for the task to be stopped...");
             sleep(Duration::from_millis(2000));
 
-            let current_task = self.describe_task(&self.config.cluster, task_arn)?;
+            let current_task = self.describe_task(&self.config.cluster, task_arn).await?;
             let stopped = check_stopped(&current_task)?;
             if stopped {
                 return Ok(());

@@ -34,7 +34,7 @@ use crate::command::MainCommand;
 fn main() {
     env_logger::init().unwrap();
 
-    ::std::process::exit(match MainCommand::run() {
+    ::std::process::exit(match futures::executor::block_on(MainCommand::run()) {
         Ok(_res) => 0,
         Err(_err) => 1,
     });

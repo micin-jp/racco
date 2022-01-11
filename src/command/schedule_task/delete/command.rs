@@ -34,17 +34,19 @@ impl<'c> Command<'c> {
         }
     }
 
-    pub fn run(&self) -> Result<(), Box<dyn error::Error>> {
+    pub async fn run(&self) -> Result<(), Box<dyn error::Error>> {
         trace!("command::schedule_task::delete::Command::run");
 
         if let Some(name) = self.name {
             let schedule_del_exec = Executer::new();
-            schedule_del_exec.run(name)?;
+            schedule_del_exec.run(name).await?;
         } else if self.all {
             if let Some(schedule_config_group) = self.config.schedule_task.as_ref() {
                 for schedule_config in schedule_config_group {
                     let schedule_del_exec = Executer::new();
-                    schedule_del_exec.run(schedule_config.rule.name.as_str())?;
+                    schedule_del_exec
+                        .run(schedule_config.rule.name.as_str())
+                        .await?;
                 }
             }
         }
