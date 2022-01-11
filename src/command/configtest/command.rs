@@ -22,7 +22,7 @@ impl<'c> Command<'c> {
         Command { config: config }
     }
 
-    pub fn run(&self) -> Result<(), Box<error::Error>> {
+    pub fn run(&self) -> Result<(), Box<dyn error::Error>> {
         trace!("command::config::Command::run");
 
         println!("{}", serde_yaml::to_string(&self.config).unwrap());

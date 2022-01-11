@@ -32,7 +32,7 @@ impl<'c> Command<'c> {
         }
     }
 
-    pub fn run(&self) -> Result<(), Box<error::Error>> {
+    pub fn run(&self) -> Result<(), Box<dyn error::Error>> {
         trace!("command::run_task::Command::run");
 
         if let Some(run_task_config_group) = self.config.run_task.as_ref() {

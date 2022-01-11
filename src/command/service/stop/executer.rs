@@ -35,7 +35,7 @@ impl<'c> Executer<'c> {
         }
     }
 
-    pub fn run(&self) -> Result<(), Box<error::Error>> {
+    pub fn run(&self) -> Result<(), Box<dyn error::Error>> {
         trace!("command::service::stop::Executer::run");
 
         let service_conf = &self.config.service;

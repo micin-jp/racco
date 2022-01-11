@@ -23,7 +23,7 @@ impl<'c> Executer<'c> {
         &self,
         program: &'c Program<'c>,
         args: &'c Arguments<'c>,
-    ) -> Result<(), Box<error::Error>> {
+    ) -> Result<(), Box<dyn error::Error>> {
         trace!("command::params::exec::Executer::run");
 
         info!("exec: {} {}", program, args.join(" "));

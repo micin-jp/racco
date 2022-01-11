@@ -10,7 +10,7 @@ use config;
 pub trait Executer {
     fn events_client(&self) -> &EventBridgeClient;
 
-    fn rule_exists(&self, rule_name: &str) -> Result<bool, Box<error::Error>> {
+    fn rule_exists(&self, rule_name: &str) -> Result<bool, Box<dyn error::Error>> {
         trace!("command::cloudwatch_events::Executer::rule_exists");
 
         let req = rusoto_events::DescribeRuleRequest {
@@ -27,7 +27,7 @@ pub trait Executer {
         }
     }
 
-    fn delete_rule(&self, rule_name: &str) -> Result<(), Box<error::Error>> {
+    fn delete_rule(&self, rule_name: &str) -> Result<(), Box<dyn error::Error>> {
         trace!("command::cloudwatch_events::Executer::delete_rule");
 
         let req = rusoto_events::DeleteRuleRequest {
@@ -44,7 +44,7 @@ pub trait Executer {
     fn put_rule(
         &self,
         rule_conf: &config::cloudwatch_events::ScheduleRule,
-    ) -> Result<(), Box<error::Error>> {
+    ) -> Result<(), Box<dyn error::Error>> {
         trace!("command::cloudwatch_events::Executer::put_rule");
 
         let req = rusoto_events::PutRuleRequest {
@@ -65,7 +65,7 @@ pub trait Executer {
         cluster_arn: &str,
         task_definition_arn: &str,
         config: &config::command::ScheduleTaskConfig,
-    ) -> Result<(), Box<error::Error>> {
+    ) -> Result<(), Box<dyn error::Error>> {
         trace!("command::cloudwatch_events::Executer::put_ecs_task_target");
 
         let targets = vec![rusoto_events::Target {
@@ -95,7 +95,7 @@ pub trait Executer {
         Ok(())
     }
 
-    fn remove_targets(&self, rule_name: &str) -> Result<(), Box<error::Error>> {
+    fn remove_targets(&self, rule_name: &str) -> Result<(), Box<dyn error::Error>> {
         trace!("command::cloudwatch_events::Executer::remove_targets");
 
         let req = rusoto_events::ListTargetsByRuleRequest {

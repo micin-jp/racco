@@ -19,7 +19,7 @@ impl<'c> Executer<'c> {
         Executer { config: config }
     }
 
-    pub fn run(&self, name: &str) -> Result<(), Box<error::Error>> {
+    pub fn run(&self, name: &str) -> Result<(), Box<dyn error::Error>> {
         trace!("command::params::delete::Executer::run");
 
         let req = rusoto_ssm::DeleteParameterRequest {

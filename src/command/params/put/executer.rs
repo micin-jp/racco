@@ -19,7 +19,7 @@ impl<'c> Executer<'c> {
         Executer { config: config }
     }
 
-    pub fn run(&self, name: &str, value: &str) -> Result<(), Box<error::Error>> {
+    pub fn run(&self, name: &str, value: &str) -> Result<(), Box<dyn error::Error>> {
         trace!("command::params::put::Executer::run");
 
         let (type_, key_id) = if let Some(secure) = self.config.secure.as_ref() {

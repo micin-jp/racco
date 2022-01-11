@@ -40,7 +40,7 @@ impl<'c> Command<'c> {
         }
     }
 
-    pub fn run(&self) -> Result<(), Box<error::Error>> {
+    pub fn run(&self) -> Result<(), Box<dyn error::Error>> {
         trace!("command::service::stop::Command::run");
 
         if let Some(service_config_group) = self.config.service.as_ref() {

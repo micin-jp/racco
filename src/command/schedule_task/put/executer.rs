@@ -31,7 +31,7 @@ impl<'c> Executer<'c> {
         }
     }
 
-    pub fn run(&self) -> Result<(), Box<error::Error>> {
+    pub fn run(&self) -> Result<(), Box<dyn error::Error>> {
         trace!("command::schedule_task::put::Executer::run");
 
         let maybe_ecs_cluster = try!(self.describe_cluster(&self.config.cluster));

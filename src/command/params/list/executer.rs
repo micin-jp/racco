@@ -19,7 +19,7 @@ impl<'c> Executer<'c> {
         Executer { config: config }
     }
 
-    pub fn run(&self) -> Result<(), Box<error::Error>> {
+    pub fn run(&self) -> Result<(), Box<dyn error::Error>> {
         trace!("command::params::list::Executer::run");
 
         let params = try!(self.params());
@@ -28,7 +28,7 @@ impl<'c> Executer<'c> {
         Ok(())
     }
 
-    fn print(&self, params: &Vec<rusoto_ssm::Parameter>) -> Result<(), Box<error::Error>> {
+    fn print(&self, params: &Vec<rusoto_ssm::Parameter>) -> Result<(), Box<dyn error::Error>> {
         let mut tw = TabWriter::new(stdout());
 
         for p in params.iter() {

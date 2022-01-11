@@ -41,7 +41,7 @@ impl error::Error for ConfigError {
         }
     }
 
-    fn cause(&self) -> Option<&error::Error> {
+    fn cause(&self) -> Option<&dyn error::Error> {
         match *self {
             ConfigError::ParseError(ref yaml_err) => Some(yaml_err),
             ConfigError::VersionRequirementError => None,
@@ -63,7 +63,7 @@ impl Config {
         file: &str,
         template_variable_map: Option<&BTreeMap<String, String>>,
         template_variable_files: Option<Vec<&str>>,
-    ) -> Result<Config, Box<error::Error>> {
+    ) -> Result<Config, Box<dyn error::Error>> {
         debug!("Config::from_file");
 
         let contents = try!(Self::load_file(&file));
@@ -78,7 +78,7 @@ impl Config {
         Ok(config)
     }
 
-    fn new(contents: &str, tmpl_vars: &serde_json::Value) -> Result<Config, Box<error::Error>> {
+    fn new(contents: &str, tmpl_vars: &serde_json::Value) -> Result<Config, Box<dyn error::Error>> {
         let rendered_contents = try!(Self::apply_template_vars(contents, tmpl_vars));
         debug!("Config::from_file - Yaml file: {}", rendered_contents);
 
@@ -94,7 +94,7 @@ impl Config {
         }
     }
 
-    fn load_file(file: &str) -> Result<String, Box<error::Error>> {
+    fn load_file(file: &str) -> Result<String, Box<dyn error::Error>> {
         let mut f = try!(File::open(file));
         let mut contents = String::new();
 
@@ -106,7 +106,7 @@ impl Config {
     fn load_template_variables(
         template_variable_map: Option<&BTreeMap<String, String>>,
         template_variable_files: Option<Vec<&str>>,
-    ) -> Result<serde_json::Value, Box<error::Error>> {
+    ) -> Result<serde_json::Value, Box<dyn error::Error>> {
         let mut vars = json!({});
 
         if let Some(tmpl_var_files) = template_variable_files {
@@ -136,13 +136,13 @@ impl Config {
     fn apply_template_vars(
         contents: &str,
         vars: &serde_json::Value,
-    ) -> Result<String, Box<error::Error>> {
+    ) -> Result<String, Box<dyn error::Error>> {
         let handlebars = Handlebars::new();
         let rendered = try!(handlebars.template_render(contents, vars));
         Ok(rendered)
     }
 
-    fn validate_version(&self, current_ver_str: &str) -> Result<(), Box<error::Error>> {
+    fn validate_version(&self, current_ver_str: &str) -> Result<(), Box<dyn error::Error>> {
         if self.version.is_none() {
             return Ok(());
         }

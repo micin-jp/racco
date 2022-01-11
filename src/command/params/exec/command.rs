@@ -46,7 +46,7 @@ impl<'c> Command<'c> {
         }
     }
 
-    pub fn run(&self) -> Result<(), Box<error::Error>> {
+    pub fn run(&self) -> Result<(), Box<dyn error::Error>> {
         trace!("command::params::exec::Command::run");
         if let Some(params_config) = self.config.params.as_ref() {
             let exec = Executer::from_config(params_config);

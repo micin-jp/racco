@@ -27,7 +27,7 @@ impl Executer {
         }
     }
 
-    pub fn run(&self, rule_name: &str) -> Result<(), Box<error::Error>> {
+    pub fn run(&self, rule_name: &str) -> Result<(), Box<dyn error::Error>> {
         trace!("command::schedule_task::delete::Executer::run");
 
         if try!(self.rule_exists(rule_name)) {

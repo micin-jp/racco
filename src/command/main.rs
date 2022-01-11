@@ -51,7 +51,7 @@ impl MainCommand {
         String::from("racco.yml")
     }
 
-    pub fn run() -> Result<(), Box<error::Error>> {
+    pub fn run() -> Result<(), Box<dyn error::Error>> {
         let matches = App::new("Racco")
             .version(env!("CARGO_PKG_VERSION"))
             .author("Daichi Sakai. <daisaru11@gmail.com>")

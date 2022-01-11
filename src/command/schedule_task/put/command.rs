@@ -32,7 +32,7 @@ impl<'c> Command<'c> {
         }
     }
 
-    pub fn run(&self) -> Result<(), Box<error::Error>> {
+    pub fn run(&self) -> Result<(), Box<dyn error::Error>> {
         trace!("command::schedule_task::put::Command::run");
 
         if let Some(schedule_config_group) = self.config.schedule_task.as_ref() {

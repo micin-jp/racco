@@ -29,7 +29,7 @@ impl<'c> Command<'c> {
         }
     }
 
-    pub fn run(&self) -> Result<(), Box<error::Error>> {
+    pub fn run(&self) -> Result<(), Box<dyn error::Error>> {
         trace!("command::params::delete::Command::run");
 
         if let Some(params_config) = self.config.params.as_ref() {

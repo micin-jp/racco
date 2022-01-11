@@ -37,7 +37,7 @@ impl<'c> Executer<'c> {
         }
     }
 
-    pub fn run(&self) -> Result<(), Box<error::Error>> {
+    pub fn run(&self) -> Result<(), Box<dyn error::Error>> {
         trace!("command::run_task::Executer::run");
 
         output::PrintLine::info("Registering a task definition");
@@ -66,10 +66,10 @@ impl<'c> Executer<'c> {
         Ok(())
     }
 
-    fn wait_for_stopped(&self, running_task: &TaskDescription) -> Result<(), Box<error::Error>> {
+    fn wait_for_stopped(&self, running_task: &TaskDescription) -> Result<(), Box<dyn error::Error>> {
         trace!("command::run-task::Executer::wait_for_stopped");
 
-        fn check_stopped(current_task: &TaskDescription) -> Result<bool, Box<error::Error>> {
+        fn check_stopped(current_task: &TaskDescription) -> Result<bool, Box<dyn error::Error>> {
             if let Some(failure) = current_task.failure.as_ref() {
                 let reason = failure.reason.as_ref().map(String::as_str).unwrap_or("");
                 output::PrintLine::error(&format!("Finished task with error :{}", reason));

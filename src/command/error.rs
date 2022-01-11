@@ -24,7 +24,7 @@ impl error::Error for CommandError {
         }
     }
 
-    fn cause(&self) -> Option<&error::Error> {
+    fn cause(&self) -> Option<&dyn error::Error> {
         match *self {
             CommandError::CommandNotFound => None,
             CommandError::Unknown => None,

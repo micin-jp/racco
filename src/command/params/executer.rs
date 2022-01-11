@@ -35,7 +35,7 @@ pub trait Executer {
         path
     }
 
-    fn strip_path<'a>(&self, name: &'a str) -> Result<&'a str, Box<error::Error>> {
+    fn strip_path<'a>(&self, name: &'a str) -> Result<&'a str, Box<dyn error::Error>> {
         let path = self.path(true);
         if name.starts_with(&path) {
             return Ok(name.trim_left_matches(&path));
@@ -44,7 +44,7 @@ pub trait Executer {
         }
     }
 
-    fn params(&self) -> Result<Vec<rusoto_ssm::Parameter>, Box<error::Error>> {
+    fn params(&self) -> Result<Vec<rusoto_ssm::Parameter>, Box<dyn error::Error>> {
         trace!("command::params::Executer::params");
         let path = self.path(false);
         let with_decription = self.config().secure.is_some();

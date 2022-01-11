@@ -19,7 +19,7 @@ impl<'c> Executer<'c> {
         Executer { config: config }
     }
 
-    pub fn run(&self, name: &str) -> Result<(), Box<error::Error>> {
+    pub fn run(&self, name: &str) -> Result<(), Box<dyn error::Error>> {
         trace!("command::params::get::Executer::run");
 
         let name_with_path = self.name_with_path(name);

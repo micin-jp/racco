@@ -33,7 +33,7 @@ impl<'c> Command<'c> {
         }
     }
 
-    pub fn run(&self) -> Result<(), Box<error::Error>> {
+    pub fn run(&self) -> Result<(), Box<dyn error::Error>> {
         trace!("command::schedule_task::delete::Command::run");
 
         if let Some(name) = self.name {

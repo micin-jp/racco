@@ -37,7 +37,7 @@ impl<'c> Executer<'c> {
         }
     }
 
-    pub fn run(&self) -> Result<(), Box<error::Error>> {
+    pub fn run(&self) -> Result<(), Box<dyn error::Error>> {
         trace!("command::service::deploy::Executer::run");
 
         let service_conf = &self.config.service;
@@ -90,7 +90,7 @@ impl<'c> Executer<'c> {
         Ok(())
     }
 
-    fn wait_for_green(&self, service_conf: &config::ecs::Service) -> Result<(), Box<error::Error>> {
+    fn wait_for_green(&self, service_conf: &config::ecs::Service) -> Result<(), Box<dyn error::Error>> {
         trace!("command::service::deploy::Executer::wait_for_green");
         let cluster = &self.config.cluster;
 
