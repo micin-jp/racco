@@ -31,10 +31,11 @@ pub mod output;
 
 use crate::command::MainCommand;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     env_logger::init().unwrap();
 
-    ::std::process::exit(match futures::executor::block_on(MainCommand::run()) {
+    ::std::process::exit(match MainCommand::run().await {
         Ok(_res) => 0,
         Err(_err) => 1,
     });
