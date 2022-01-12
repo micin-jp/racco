@@ -175,6 +175,7 @@ pub struct RunTaskConfig {
     pub launch_type: Option<String>,
     pub network_configuration: Option<ecs::NetworkConfiguration>,
     pub platform_version: Option<String>,
+    pub enable_execute_command: Option<bool>,
 }
 
 pub type ScheduleTaskConfigGroup = Vec<ScheduleTaskConfig>;

@@ -12,6 +12,7 @@ pub struct Service {
     pub network_configuration: Option<NetworkConfiguration>,
     pub service_registries: Option<Vec<ServiceRegistry>>,
     pub platform_version: Option<String>,
+    pub enable_execute_command: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

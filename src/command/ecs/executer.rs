@@ -130,6 +130,7 @@ pub trait Executer {
                 .map(|srs| srs.iter().map(|sr| sr.to_rusoto()).collect()),
             task_definition: Some(task_definition.to_owned()),
             platform_version: service_conf.platform_version.to_owned(),
+            enable_execute_command: service_conf.enable_execute_command,
             ..Default::default()
         };
 
@@ -195,6 +196,7 @@ pub trait Executer {
                 .map(|e| e.to_rusoto()),
             task_definition: task_definition.task_definition_arn.to_owned(),
             platform_version: service_conf.platform_version.to_owned(),
+            enable_execute_command: service_conf.enable_execute_command,
             ..Default::default()
         };
 
@@ -240,6 +242,7 @@ pub trait Executer {
         launch_type: Option<&str>,
         network_configuration: Option<&config::ecs::NetworkConfiguration>,
         platform_version: Option<&str>,
+        enable_execute_command: Option<bool>,
     ) -> Result<TaskDescription, Box<dyn error::Error>> {
         let req = rusoto_ecs::RunTaskRequest {
             cluster: Some(cluster.to_owned()),
@@ -247,6 +250,7 @@ pub trait Executer {
             launch_type: launch_type.map(str::to_string),
             network_configuration: network_configuration.map(|d| d.to_rusoto()),
             platform_version: platform_version.map(str::to_string),
+            enable_execute_command: enable_execute_command,
             ..Default::default()
         };
 

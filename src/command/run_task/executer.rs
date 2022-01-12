@@ -56,6 +56,7 @@ impl<'c> Executer<'c> {
                 self.config.launch_type.as_ref().map(|s| s.as_str()),
                 self.config.network_configuration.as_ref(),
                 self.config.platform_version.as_ref().map(|s| s.as_str()),
+                self.config.enable_execute_command,
             )
             .await?;
 
