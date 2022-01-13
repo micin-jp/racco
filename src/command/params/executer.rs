@@ -1,11 +1,13 @@
-use config;
+use async_trait::async_trait;
 use rusoto_core::Region;
 use rusoto_ssm;
 use rusoto_ssm::{Ssm, SsmClient};
 use std::error;
 
-use command::error::CommandError;
+use crate::command::error::CommandError;
+use crate::config;
 
+#[async_trait]
 pub trait Executer {
     fn client(&self) -> SsmClient {
         return SsmClient::new(Region::ApNortheast1);
@@ -35,7 +37,7 @@ pub trait Executer {
         path
     }
 
-    fn strip_path<'a>(&self, name: &'a str) -> Result<&'a str, Box<error::Error>> {
+    fn strip_path<'a>(&self, name: &'a str) -> Result<&'a str, Box<dyn error::Error>> {
         let path = self.path(true);
         if name.starts_with(&path) {
             return Ok(name.trim_left_matches(&path));
@@ -44,7 +46,7 @@ pub trait Executer {
         }
     }
 
-    fn params(&self) -> Result<Vec<rusoto_ssm::Parameter>, Box<error::Error>> {
+    async fn params(&self) -> Result<Vec<rusoto_ssm::Parameter>, Box<dyn error::Error>> {
         trace!("command::params::Executer::params");
         let path = self.path(false);
         let with_decription = self.config().secure.is_some();
@@ -56,7 +58,7 @@ pub trait Executer {
         };
 
         let client = self.client();
-        let mut res = try!(client.get_parameters_by_path(req).sync());
+        let mut res = client.get_parameters_by_path(req).await?;
 
         let mut params: Vec<rusoto_ssm::Parameter> = Vec::new();
         if let Some(new_params) = res.parameters {
@@ -71,7 +73,7 @@ pub trait Executer {
                 next_token: Some(next_token),
                 ..Default::default()
             };
-            res = try!(client.get_parameters_by_path(req).sync());
+            res = client.get_parameters_by_path(req).await?;
 
             if let Some(new_params) = res.parameters {
                 params.extend(new_params.into_iter());

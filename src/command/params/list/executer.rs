@@ -6,7 +6,7 @@ use tabwriter::TabWriter;
 use rusoto_ssm;
 
 use super::super::Executer as ParamsExecuter;
-use config;
+use crate::config;
 
 pub struct Executer<'c> {
     config: &'c config::command::ParamsConfig,
@@ -19,26 +19,26 @@ impl<'c> Executer<'c> {
         Executer { config: config }
     }
 
-    pub fn run(&self) -> Result<(), Box<error::Error>> {
+    pub async fn run(&self) -> Result<(), Box<dyn error::Error>> {
         trace!("command::params::list::Executer::run");
 
-        let params = try!(self.params());
-        try!(self.print(&params));
+        let params = self.params().await?;
+        self.print(&params)?;
 
         Ok(())
     }
 
-    fn print(&self, params: &Vec<rusoto_ssm::Parameter>) -> Result<(), Box<error::Error>> {
+    fn print(&self, params: &Vec<rusoto_ssm::Parameter>) -> Result<(), Box<dyn error::Error>> {
         let mut tw = TabWriter::new(stdout());
 
         for p in params.iter() {
             if let (Some(name_with_path), Some(value)) = (p.name.as_ref(), p.value.as_ref()) {
-                let name = try!(self.strip_path(name_with_path));
-                try!(write!(&mut tw, "{}\t{}\n", name, value));
+                let name = self.strip_path(name_with_path)?;
+                write!(&mut tw, "{}\t{}\n", name, value)?;
             }
         }
 
-        try!(tw.flush());
+        tw.flush()?;
         Ok(())
     }
 }

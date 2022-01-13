@@ -1,7 +1,8 @@
 use std::error;
 
 use clap;
-use config;
+
+use crate::config;
 
 use super::executer::{Executer, ExecuterOptions};
 
@@ -40,7 +41,7 @@ impl<'c> Command<'c> {
         }
     }
 
-    pub fn run(&self) -> Result<(), Box<error::Error>> {
+    pub async fn run(&self) -> Result<(), Box<dyn error::Error>> {
         trace!("command::service::deploy::Command::run");
 
         if let Some(service_config_group) = self.config.service.as_ref() {
@@ -62,7 +63,7 @@ impl<'c> Command<'c> {
                     no_wait: self.no_wait,
                 };
                 let ecs_deploy_cmd = Executer::from_config(&service_config, &options);
-                try!(ecs_deploy_cmd.run());
+                ecs_deploy_cmd.run().await?;
             }
         }
 

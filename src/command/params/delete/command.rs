@@ -1,7 +1,8 @@
 use std::error;
 
 use clap;
-use config;
+
+use crate::config;
 
 use super::executer::Executer;
 
@@ -29,13 +30,13 @@ impl<'c> Command<'c> {
         }
     }
 
-    pub fn run(&self) -> Result<(), Box<error::Error>> {
+    pub async fn run(&self) -> Result<(), Box<dyn error::Error>> {
         trace!("command::params::delete::Command::run");
 
         if let Some(params_config) = self.config.params.as_ref() {
             let exec = Executer::from_config(&params_config);
 
-            try!(exec.run(self.name));
+            exec.run(self.name).await?;
         }
         Ok(())
     }

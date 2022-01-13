@@ -1,7 +1,8 @@
 use std::error;
 
 use clap;
-use config;
+
+use crate::config;
 
 use super::executer::Executer;
 
@@ -32,7 +33,7 @@ impl<'c> Command<'c> {
         }
     }
 
-    pub fn run(&self) -> Result<(), Box<error::Error>> {
+    pub async fn run(&self) -> Result<(), Box<dyn error::Error>> {
         trace!("command::schedule_task::put::Command::run");
 
         if let Some(schedule_config_group) = self.config.schedule_task.as_ref() {
@@ -51,7 +52,7 @@ impl<'c> Command<'c> {
                 }
 
                 let schedule_put_exec = Executer::from_config(&schedule_config);
-                try!(schedule_put_exec.run());
+                schedule_put_exec.run().await?;
             }
         }
 

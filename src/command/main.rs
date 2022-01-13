@@ -4,9 +4,6 @@ use std::error;
 
 use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 
-use config;
-use output;
-
 use super::error::CommandError;
 
 use super::configtest;
@@ -14,6 +11,9 @@ use super::params;
 use super::run_task;
 use super::schedule_task;
 use super::service;
+
+use crate::config;
+use crate::output;
 
 pub struct MainCommand {}
 
@@ -51,7 +51,7 @@ impl MainCommand {
         String::from("racco.yml")
     }
 
-    pub fn run() -> Result<(), Box<error::Error>> {
+    pub async fn run() -> Result<(), Box<dyn error::Error>> {
         let matches = App::new("Racco")
             .version(env!("CARGO_PKG_VERSION"))
             .author("Daichi Sakai. <daisaru11@gmail.com>")
@@ -238,7 +238,9 @@ impl MainCommand {
 
         let template_variables = MainCommand::parse_args_template_variables(&matches);
 
-        let template_variable_files = matches.values_of("CONFIG_TEMPLATE_VARIABLE_FILE").map(|v| v.collect());
+        let template_variable_files = matches
+            .values_of("CONFIG_TEMPLATE_VARIABLE_FILE")
+            .map(|v| v.collect());
 
         match config::command::Config::from_file(
             config_file.as_str(),
@@ -256,7 +258,7 @@ impl MainCommand {
                         info!("start service deploy");
 
                         let cmd = service::deploy::Command::from_args(&config, sub1_matches);
-                        match cmd.run() {
+                        match cmd.run().await {
                             Ok(_) => {
                                 info!("end service deploy");
                                 return Ok(());
@@ -275,7 +277,7 @@ impl MainCommand {
                         info!("start stopping service");
 
                         let cmd = service::stop::Command::from_args(&config, sub1_matches);
-                        match cmd.run() {
+                        match cmd.run().await {
                             Ok(_) => {
                                 info!("end stopping service");
                                 return Ok(());
@@ -313,7 +315,7 @@ impl MainCommand {
                     info!("start run-task");
 
                     let cmd = run_task::Command::from_args(&config, sub_matches);
-                    match cmd.run() {
+                    match cmd.run().await {
                         Ok(_) => {
                             info!("end run-task");
                             return Ok(());
@@ -334,7 +336,7 @@ impl MainCommand {
                         info!("start schedule-task put");
 
                         let cmd = schedule_task::put::Command::from_args(&config, sub1_matches);
-                        match cmd.run() {
+                        match cmd.run().await {
                             Ok(_) => {
                                 info!("end schdule-task put");
                                 return Ok(());
@@ -349,7 +351,7 @@ impl MainCommand {
                         info!("start schedule-task delete");
 
                         let cmd = schedule_task::delete::Command::from_args(&config, sub1_matches);
-                        match cmd.run() {
+                        match cmd.run().await {
                             Ok(_) => {
                                 info!("end schedule-task delete");
                                 return Ok(());
@@ -368,7 +370,7 @@ impl MainCommand {
                         info!("start params get");
 
                         let cmd = params::get::Command::from_args(&config, sub1_matches);
-                        match cmd.run() {
+                        match cmd.run().await {
                             Ok(_) => {
                                 info!("end params get");
                                 return Ok(());
@@ -383,7 +385,7 @@ impl MainCommand {
                         info!("start params list");
 
                         let cmd = params::list::Command::from_args(&config, sub1_matches);
-                        match cmd.run() {
+                        match cmd.run().await {
                             Ok(_) => {
                                 info!("end params list");
                                 return Ok(());
@@ -398,7 +400,7 @@ impl MainCommand {
                         info!("start params put");
 
                         let cmd = params::put::Command::from_args(&config, sub1_matches);
-                        match cmd.run() {
+                        match cmd.run().await {
                             Ok(_) => {
                                 info!("end params put");
                                 return Ok(());
@@ -413,7 +415,7 @@ impl MainCommand {
                         info!("start params delete");
 
                         let cmd = params::delete::Command::from_args(&config, sub1_matches);
-                        match cmd.run() {
+                        match cmd.run().await {
                             Ok(_) => {
                                 info!("end params delete");
                                 return Ok(());
@@ -428,7 +430,7 @@ impl MainCommand {
                         info!("start params exec");
 
                         let cmd = params::exec::Command::from_args(&config, sub1_matches);
-                        match cmd.run() {
+                        match cmd.run().await {
                             Ok(_) => {
                                 info!("end params exec");
                                 return Ok(());

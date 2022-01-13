@@ -41,7 +41,7 @@ impl error::Error for ConfigError {
         }
     }
 
-    fn cause(&self) -> Option<&error::Error> {
+    fn cause(&self) -> Option<&dyn error::Error> {
         match *self {
             ConfigError::ParseError(ref yaml_err) => Some(yaml_err),
             ConfigError::VersionRequirementError => None,
@@ -63,23 +63,21 @@ impl Config {
         file: &str,
         template_variable_map: Option<&BTreeMap<String, String>>,
         template_variable_files: Option<Vec<&str>>,
-    ) -> Result<Config, Box<error::Error>> {
+    ) -> Result<Config, Box<dyn error::Error>> {
         debug!("Config::from_file");
 
-        let contents = try!(Self::load_file(&file));
-        let tmpl_vars = try!(Self::load_template_variables(
-            template_variable_map,
-            template_variable_files
-        ));
+        let contents = Self::load_file(&file)?;
+        let tmpl_vars =
+            Self::load_template_variables(template_variable_map, template_variable_files)?;
 
-        let config = try!(Self::new(&contents, &tmpl_vars));
+        let config = Self::new(&contents, &tmpl_vars)?;
         let current_ver_str: &str = env!("CARGO_PKG_VERSION");
-        try!(config.validate_version(current_ver_str));
+        config.validate_version(current_ver_str)?;
         Ok(config)
     }
 
-    fn new(contents: &str, tmpl_vars: &serde_json::Value) -> Result<Config, Box<error::Error>> {
-        let rendered_contents = try!(Self::apply_template_vars(contents, tmpl_vars));
+    fn new(contents: &str, tmpl_vars: &serde_json::Value) -> Result<Config, Box<dyn error::Error>> {
+        let rendered_contents = Self::apply_template_vars(contents, tmpl_vars)?;
         debug!("Config::from_file - Yaml file: {}", rendered_contents);
 
         match serde_yaml::from_str::<Config>(&rendered_contents) {
@@ -94,11 +92,11 @@ impl Config {
         }
     }
 
-    fn load_file(file: &str) -> Result<String, Box<error::Error>> {
-        let mut f = try!(File::open(file));
+    fn load_file(file: &str) -> Result<String, Box<dyn error::Error>> {
+        let mut f = File::open(file)?;
         let mut contents = String::new();
 
-        try!(f.read_to_string(&mut contents));
+        f.read_to_string(&mut contents)?;
 
         Ok(contents)
     }
@@ -106,17 +104,17 @@ impl Config {
     fn load_template_variables(
         template_variable_map: Option<&BTreeMap<String, String>>,
         template_variable_files: Option<Vec<&str>>,
-    ) -> Result<serde_json::Value, Box<error::Error>> {
+    ) -> Result<serde_json::Value, Box<dyn error::Error>> {
         let mut vars = json!({});
 
         if let Some(tmpl_var_files) = template_variable_files {
             for tmpl_var_file in tmpl_var_files {
-                let mut var_file = try!(File::open(tmpl_var_file));
+                let mut var_file = File::open(tmpl_var_file)?;
                 let mut var_contents = String::new();
 
-                try!(var_file.read_to_string(&mut var_contents));
+                var_file.read_to_string(&mut var_contents)?;
 
-                let j = try!(serde_yaml::from_str::<serde_json::Value>(&var_contents));
+                let j = serde_yaml::from_str::<serde_json::Value>(&var_contents)?;
                 for (k, v) in j.as_object().unwrap() {
                     vars[k] = v.to_owned()
                 }
@@ -136,19 +134,19 @@ impl Config {
     fn apply_template_vars(
         contents: &str,
         vars: &serde_json::Value,
-    ) -> Result<String, Box<error::Error>> {
+    ) -> Result<String, Box<dyn error::Error>> {
         let handlebars = Handlebars::new();
-        let rendered = try!(handlebars.template_render(contents, vars));
+        let rendered = handlebars.template_render(contents, vars)?;
         Ok(rendered)
     }
 
-    fn validate_version(&self, current_ver_str: &str) -> Result<(), Box<error::Error>> {
+    fn validate_version(&self, current_ver_str: &str) -> Result<(), Box<dyn error::Error>> {
         if self.version.is_none() {
             return Ok(());
         }
 
-        let current_ver = try!(Version::parse(current_ver_str));
-        let version_req = try!(VersionReq::parse(self.version.as_ref().unwrap().as_str()));
+        let current_ver = Version::parse(current_ver_str)?;
+        let version_req = VersionReq::parse(self.version.as_ref().unwrap().as_str())?;
 
         if version_req.matches(&current_ver) {
             Ok(())
@@ -177,6 +175,7 @@ pub struct RunTaskConfig {
     pub launch_type: Option<String>,
     pub network_configuration: Option<ecs::NetworkConfiguration>,
     pub platform_version: Option<String>,
+    pub enable_execute_command: Option<bool>,
 }
 
 pub type ScheduleTaskConfigGroup = Vec<ScheduleTaskConfig>;

@@ -5,8 +5,8 @@ use rusoto_ssm;
 use rusoto_ssm::Ssm;
 
 use super::super::Executer as ParamsExecuter;
-use config;
-use output;
+use crate::config;
+use crate::output;
 
 pub struct Executer<'c> {
     config: &'c config::command::ParamsConfig,
@@ -19,7 +19,7 @@ impl<'c> Executer<'c> {
         Executer { config: config }
     }
 
-    pub fn run(&self, name: &str, value: &str) -> Result<(), Box<error::Error>> {
+    pub async fn run(&self, name: &str, value: &str) -> Result<(), Box<dyn error::Error>> {
         trace!("command::params::put::Executer::run");
 
         let (type_, key_id) = if let Some(secure) = self.config.secure.as_ref() {
@@ -31,14 +31,14 @@ impl<'c> Executer<'c> {
         let req = rusoto_ssm::PutParameterRequest {
             name: self.name_with_path(name),
             value: value.to_owned(),
-            type_: type_,
+            type_: Some(type_),
             key_id: key_id,
             overwrite: Some(true),
             ..Default::default()
         };
 
         let client = self.client();
-        try!(client.put_parameter(req).sync());
+        client.put_parameter(req).await?;
 
         output::PrintLine::success("Finished put the parameter");
         Ok(())

@@ -3,7 +3,7 @@ use std::error;
 use clap;
 
 use super::executer::Executer;
-use config;
+use crate::config;
 
 pub struct Command<'c> {
     config: &'c config::command::Config,
@@ -22,11 +22,11 @@ impl<'c> Command<'c> {
         Command { config: config }
     }
 
-    pub fn run(&self) -> Result<(), Box<error::Error>> {
+    pub async fn run(&self) -> Result<(), Box<dyn error::Error>> {
         trace!("command::params::list::Command::run");
         if let Some(params_config) = self.config.params.as_ref() {
             let exec = Executer::from_config(params_config);
-            try!(exec.run());
+            exec.run().await?;
         }
         Ok(())
     }

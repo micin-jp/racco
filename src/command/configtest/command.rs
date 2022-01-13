@@ -3,7 +3,7 @@ use std::error;
 use clap;
 use serde_yaml;
 
-use config;
+use crate::config;
 
 pub struct Command<'c> {
     config: &'c config::command::Config,
@@ -22,7 +22,7 @@ impl<'c> Command<'c> {
         Command { config: config }
     }
 
-    pub fn run(&self) -> Result<(), Box<error::Error>> {
+    pub fn run(&self) -> Result<(), Box<dyn error::Error>> {
         trace!("command::config::Command::run");
 
         println!("{}", serde_yaml::to_string(&self.config).unwrap());

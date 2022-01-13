@@ -3,11 +3,10 @@ use std::error;
 use rusoto_core::Region;
 use rusoto_ecs::EcsClient;
 
-use config;
-use output;
-
-use command::ecs::Executer as EcsExecuter;
-use command::error::CommandError;
+use crate::command::ecs::Executer as EcsExecuter;
+use crate::command::error::CommandError;
+use crate::config;
+use crate::output;
 
 pub struct ExecuterOptions {
     pub no_wait: bool,
@@ -35,20 +34,21 @@ impl<'c> Executer<'c> {
         }
     }
 
-    pub fn run(&self) -> Result<(), Box<error::Error>> {
+    pub async fn run(&self) -> Result<(), Box<dyn error::Error>> {
         trace!("command::service::stop::Executer::run");
 
         let service_conf = &self.config.service;
         let cluster = &self.config.cluster;
 
-        let maybe_service = try!(self.describe_service(cluster, &service_conf));
+        let maybe_service = self.describe_service(cluster, &service_conf).await?;
 
         if maybe_service.is_none() {
             output::PrintLine::info("Service has not been exist.");
             return Ok(());
         }
-        let maybe_task_definition =
-            try!(self.describe_latest_task_definition(&service_conf.task_definition.family,));
+        let maybe_task_definition = self
+            .describe_latest_task_definition(&service_conf.task_definition.family)
+            .await?;
         if maybe_task_definition.is_none() {
             output::PrintLine::error("Could not find task_definition");
             return Err(Box::new(CommandError::Unknown));
@@ -66,10 +66,12 @@ impl<'c> Executer<'c> {
             network_configuration: service_conf.network_configuration.to_owned(),
             service_registries: service_conf.service_registries.to_owned(),
             platform_version: service_conf.platform_version.to_owned(),
+            enable_execute_command: service_conf.enable_execute_command,
         };
 
         output::PrintLine::info("Starting to update the service");
-        try!(self.update_service(cluster, &zero_task_service, &task_definition,));
+        self.update_service(cluster, &zero_task_service, &task_definition)
+            .await?;
         output::PrintLine::info("Finished updating the service");
 
         // if !self.options.no_wait {

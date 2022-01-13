@@ -5,12 +5,11 @@ use std::time::Duration;
 use rusoto_core::Region;
 use rusoto_ecs::EcsClient;
 
-use config;
-use output;
-
 use super::super::error::CommandError;
-use command::ecs::Executer as EcsExecuter;
-use command::ecs::TaskDescription;
+use crate::command::ecs::Executer as EcsExecuter;
+use crate::command::ecs::TaskDescription;
+use crate::config;
+use crate::output;
 
 pub struct ExecuterOptions {
     pub no_wait: bool,
@@ -37,39 +36,45 @@ impl<'c> Executer<'c> {
         }
     }
 
-    pub fn run(&self) -> Result<(), Box<error::Error>> {
+    pub async fn run(&self) -> Result<(), Box<dyn error::Error>> {
         trace!("command::run_task::Executer::run");
 
         output::PrintLine::info("Registering a task definition");
-        let task_definition = try!(self.register_task_definition(&self.config.task_definition));
-        let task_definition_arn = try!(
-            task_definition
-                .task_definition_arn
-                .as_ref()
-                .ok_or(Box::new(CommandError::Unknown,),)
-        );
+        let task_definition = self
+            .register_task_definition(&self.config.task_definition)
+            .await?;
+        let task_definition_arn = task_definition
+            .task_definition_arn
+            .as_ref()
+            .ok_or(Box::new(CommandError::Unknown))?;
 
         output::PrintLine::info("Starting to run the task");
-        let running_task = try!(self.run_task(
-            &self.config.cluster,
-            &task_definition_arn,
-            self.config.launch_type.as_ref().map(|s| s.as_str()),
-            self.config.network_configuration.as_ref(),
-            self.config.platform_version.as_ref().map(|s| s.as_str()),
-        ));
+        let running_task = self
+            .run_task(
+                &self.config.cluster,
+                &task_definition_arn,
+                self.config.launch_type.as_ref().map(|s| s.as_str()),
+                self.config.network_configuration.as_ref(),
+                self.config.platform_version.as_ref().map(|s| s.as_str()),
+                self.config.enable_execute_command,
+            )
+            .await?;
 
         if !self.options.no_wait {
-            try!(self.wait_for_stopped(&running_task));
+            self.wait_for_stopped(&running_task).await?;
         }
 
         output::PrintLine::success("Finished running the task");
         Ok(())
     }
 
-    fn wait_for_stopped(&self, running_task: &TaskDescription) -> Result<(), Box<error::Error>> {
+    async fn wait_for_stopped(
+        &self,
+        running_task: &TaskDescription,
+    ) -> Result<(), Box<dyn error::Error>> {
         trace!("command::run-task::Executer::wait_for_stopped");
 
-        fn check_stopped(current_task: &TaskDescription) -> Result<bool, Box<error::Error>> {
+        fn check_stopped(current_task: &TaskDescription) -> Result<bool, Box<dyn error::Error>> {
             if let Some(failure) = current_task.failure.as_ref() {
                 let reason = failure.reason.as_ref().map(String::as_str).unwrap_or("");
                 output::PrintLine::error(&format!("Finished task with error :{}", reason));
@@ -82,11 +87,10 @@ impl<'c> Executer<'c> {
                     return Err(Box::new(CommandError::Unknown));
                 }
                 Some(task) => {
-                    let status = try!(
-                        task.last_status
-                            .as_ref()
-                            .ok_or(Box::new(CommandError::Unknown))
-                    );
+                    let status = task
+                        .last_status
+                        .as_ref()
+                        .ok_or(Box::new(CommandError::Unknown))?;
                     if status == "STOPPED" {
                         if let Some(reason) = task.stopped_reason.as_ref() {
                             if reason != "Essential container in task exited" {
@@ -98,12 +102,11 @@ impl<'c> Executer<'c> {
                             }
                         }
 
-                        let essential_container = try!(
-                            task.containers
-                                .as_ref()
-                                .and_then(|c| c.first())
-                                .ok_or(Box::new(CommandError::Unknown))
-                        );
+                        let essential_container = task
+                            .containers
+                            .as_ref()
+                            .and_then(|c| c.first())
+                            .ok_or(Box::new(CommandError::Unknown))?;
 
                         match essential_container.exit_code {
                             Some(0) => return Ok(true), // stopped task successfully!
@@ -135,7 +138,7 @@ impl<'c> Executer<'c> {
             Ok(false)
         }
 
-        let stopped = try!(check_stopped(running_task));
+        let stopped = check_stopped(running_task)?;
         if stopped {
             return Ok(());
         }
@@ -153,8 +156,8 @@ impl<'c> Executer<'c> {
             output::PrintLine::info("Waiting for the task to be stopped...");
             sleep(Duration::from_millis(2000));
 
-            let current_task = try!(self.describe_task(&self.config.cluster, task_arn));
-            let stopped = try!(check_stopped(&current_task));
+            let current_task = self.describe_task(&self.config.cluster, task_arn).await?;
+            let stopped = check_stopped(&current_task)?;
             if stopped {
                 return Ok(());
             }

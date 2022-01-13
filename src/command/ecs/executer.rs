@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use std::default::Default;
 use std::error;
 
@@ -5,21 +6,22 @@ use rusoto_core::RusotoError;
 use rusoto_ecs;
 use rusoto_ecs::{Ecs, EcsClient};
 
-use command::error::CommandError;
-use config;
+use crate::command::error::CommandError;
+use crate::config;
 
 pub struct TaskDescription {
     pub task: Option<rusoto_ecs::Task>,
     pub failure: Option<rusoto_ecs::Failure>,
 }
 
+#[async_trait]
 pub trait Executer {
     fn ecs_client(&self) -> &EcsClient;
 
-    fn describe_cluster(
+    async fn describe_cluster(
         &self,
         name: &str,
-    ) -> Result<Option<rusoto_ecs::Cluster>, Box<error::Error>> {
+    ) -> Result<Option<rusoto_ecs::Cluster>, Box<dyn error::Error>> {
         trace!("command::ecs::Executer::describe_cluster");
 
         let req = rusoto_ecs::DescribeClustersRequest {
@@ -27,7 +29,7 @@ pub trait Executer {
             ..Default::default()
         };
 
-        let res = try!(self.ecs_client().describe_clusters(req).sync());
+        let res = self.ecs_client().describe_clusters(req).await?;
         info!("Completed to describe clusters successfully");
 
         match res.clusters {
@@ -44,10 +46,10 @@ pub trait Executer {
         }
     }
 
-    fn describe_latest_task_definition(
+    async fn describe_latest_task_definition(
         &self,
         family: &str,
-    ) -> Result<Option<rusoto_ecs::TaskDefinition>, Box<error::Error>> {
+    ) -> Result<Option<rusoto_ecs::TaskDefinition>, Box<dyn error::Error>> {
         trace!("command::ecs::Executer::describe_latest_task_definition");
 
         let req = rusoto_ecs::DescribeTaskDefinitionRequest {
@@ -55,7 +57,7 @@ pub trait Executer {
             ..Default::default()
         };
 
-        match self.ecs_client().describe_task_definition(req).sync() {
+        match self.ecs_client().describe_task_definition(req).await {
             Ok(res) => {
                 info!("Completed to describe task_definition successfully");
                 Ok(res.task_definition)
@@ -68,10 +70,10 @@ pub trait Executer {
         }
     }
 
-    fn register_task_definition(
+    async fn register_task_definition(
         &self,
         task_definition_conf: &config::ecs::TaskDefinition,
-    ) -> Result<rusoto_ecs::TaskDefinition, Box<error::Error>> {
+    ) -> Result<rusoto_ecs::TaskDefinition, Box<dyn error::Error>> {
         trace!("command::ecs::Executer::register_task_definition");
         let req = rusoto_ecs::RegisterTaskDefinitionRequest {
             family: task_definition_conf.family.to_owned(),
@@ -93,18 +95,18 @@ pub trait Executer {
             ..Default::default()
         };
 
-        let res = try!(self.ecs_client().register_task_definition(req).sync());
+        let res = self.ecs_client().register_task_definition(req).await?;
         info!("Completed to register task_definition successfully");
 
         res.task_definition.ok_or(Box::new(CommandError::Unknown))
     }
 
-    fn create_service(
+    async fn create_service(
         &self,
         cluster: &str,
         service_conf: &config::ecs::Service,
         task_definition: &str,
-    ) -> Result<rusoto_ecs::Service, Box<error::Error>> {
+    ) -> Result<rusoto_ecs::Service, Box<dyn error::Error>> {
         trace!("command::ecs::Executer::create_service");
 
         let req = rusoto_ecs::CreateServiceRequest {
@@ -128,20 +130,21 @@ pub trait Executer {
                 .map(|srs| srs.iter().map(|sr| sr.to_rusoto()).collect()),
             task_definition: Some(task_definition.to_owned()),
             platform_version: service_conf.platform_version.to_owned(),
+            enable_execute_command: service_conf.enable_execute_command,
             ..Default::default()
         };
 
-        let res = try!(self.ecs_client().create_service(req).sync());
+        let res = self.ecs_client().create_service(req).await?;
         info!("Completed to create service successfully");
 
         res.service.ok_or(Box::new(CommandError::Unknown))
     }
 
-    fn describe_service(
+    async fn describe_service(
         &self,
         cluster: &str,
         service_conf: &config::ecs::Service,
-    ) -> Result<Option<rusoto_ecs::Service>, Box<error::Error>> {
+    ) -> Result<Option<rusoto_ecs::Service>, Box<dyn error::Error>> {
         trace!("command::ecs::Executer::describe_service");
 
         let req = rusoto_ecs::DescribeServicesRequest {
@@ -150,7 +153,7 @@ pub trait Executer {
             ..Default::default()
         };
 
-        let res = try!(self.ecs_client().describe_services(req).sync());
+        let res = self.ecs_client().describe_services(req).await?;
         info!("Completed to describe services successfully");
 
         match res.services {
@@ -167,12 +170,12 @@ pub trait Executer {
         }
     }
 
-    fn update_service(
+    async fn update_service(
         &self,
         cluster: &str,
         service_conf: &config::ecs::Service,
         task_definition: &rusoto_ecs::TaskDefinition,
-    ) -> Result<rusoto_ecs::Service, Box<error::Error>> {
+    ) -> Result<rusoto_ecs::Service, Box<dyn error::Error>> {
         trace!("command::ecs::Executer::update_service");
 
         if task_definition.task_definition_arn.is_none() {
@@ -193,28 +196,29 @@ pub trait Executer {
                 .map(|e| e.to_rusoto()),
             task_definition: task_definition.task_definition_arn.to_owned(),
             platform_version: service_conf.platform_version.to_owned(),
+            enable_execute_command: service_conf.enable_execute_command,
             ..Default::default()
         };
 
-        let res = try!(self.ecs_client().update_service(req).sync());
+        let res = self.ecs_client().update_service(req).await?;
         info!("Completed to update service successfully");
 
         let service = res.service.map(|s| s.to_owned());
         service.ok_or(Box::new(CommandError::Unknown))
     }
 
-    fn describe_task(
+    async fn describe_task(
         &self,
         cluster: &str,
         task_arn: &str,
-    ) -> Result<TaskDescription, Box<error::Error>> {
+    ) -> Result<TaskDescription, Box<dyn error::Error>> {
         let req = rusoto_ecs::DescribeTasksRequest {
             cluster: Some(cluster.to_owned()),
             tasks: vec![task_arn.to_owned()],
             ..Default::default()
         };
 
-        let result = try!(self.ecs_client().describe_tasks(req).sync());
+        let result = self.ecs_client().describe_tasks(req).await?;
         debug!("{:?}", result);
 
         let failure = result
@@ -231,24 +235,26 @@ pub trait Executer {
         }
     }
 
-    fn run_task(
+    async fn run_task(
         &self,
         cluster: &str,
         task_definition_arn: &str,
         launch_type: Option<&str>,
         network_configuration: Option<&config::ecs::NetworkConfiguration>,
         platform_version: Option<&str>,
-    ) -> Result<TaskDescription, Box<error::Error>> {
+        enable_execute_command: Option<bool>,
+    ) -> Result<TaskDescription, Box<dyn error::Error>> {
         let req = rusoto_ecs::RunTaskRequest {
             cluster: Some(cluster.to_owned()),
             task_definition: task_definition_arn.to_owned(),
             launch_type: launch_type.map(str::to_string),
             network_configuration: network_configuration.map(|d| d.to_rusoto()),
             platform_version: platform_version.map(str::to_string),
+            enable_execute_command: enable_execute_command,
             ..Default::default()
         };
 
-        let result = try!(self.ecs_client().run_task(req).sync());
+        let result = self.ecs_client().run_task(req).await?;
         info!("Completed to run task successfully");
 
         debug!("{:?}", result);

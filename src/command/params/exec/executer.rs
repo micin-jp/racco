@@ -1,9 +1,9 @@
 use std::error;
 use std::process;
 
-use command::error::CommandError;
-use config;
-use output;
+use crate::command::error::CommandError;
+use crate::config;
+use crate::output;
 
 use super::super::Executer as ParamsExecuter;
 use super::{Arguments, Program};
@@ -19,15 +19,15 @@ impl<'c> Executer<'c> {
         Executer { config: config }
     }
 
-    pub fn run(
+    pub async fn run(
         &self,
         program: &'c Program<'c>,
         args: &'c Arguments<'c>,
-    ) -> Result<(), Box<error::Error>> {
+    ) -> Result<(), Box<dyn error::Error>> {
         trace!("command::params::exec::Executer::run");
 
         info!("exec: {} {}", program, args.join(" "));
-        let params = try!(self.params());
+        let params = self.params().await?;
         let mut cmd = process::Command::new(program);
 
         cmd.args(args);
@@ -42,8 +42,8 @@ impl<'c> Executer<'c> {
         }
 
         // TODO: Handle signals
-        let mut child = try!(cmd.spawn());
-        let output = try!(child.wait());
+        let mut child = cmd.spawn()?;
+        let output = child.wait()?;
 
         if output.success() {
             Ok(())

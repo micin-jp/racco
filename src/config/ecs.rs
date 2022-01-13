@@ -12,6 +12,7 @@ pub struct Service {
     pub network_configuration: Option<NetworkConfiguration>,
     pub service_registries: Option<Vec<ServiceRegistry>>,
     pub platform_version: Option<String>,
+    pub enable_execute_command: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -78,6 +79,7 @@ pub type NetworkMode = String;
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct Volume {
     pub docker_volume_configuration: Option<DockerVolumeConfiguration>,
+    pub efs_volume_configuration: Option<EFSVolumeConfiguration>,
     pub host: Option<HostVolumeProperties>,
     pub name: Option<String>,
 }
@@ -88,6 +90,11 @@ impl Volume {
                 .docker_volume_configuration
                 .as_ref()
                 .map(|c| c.to_rusoto()),
+            efs_volume_configuration: self
+                .efs_volume_configuration
+                .as_ref()
+                .map(|c| c.to_rusoto()),
+            fsx_windows_file_server_volume_configuration: None, // not supported
             host: self.host.as_ref().map(|e| e.to_rusoto()),
             name: self.name.to_owned(),
         }
@@ -115,6 +122,40 @@ impl DockerVolumeConfiguration {
 }
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct EFSVolumeConfiguration {
+    pub authorization_config: Option<EFSAuthorizationConfig>,
+    pub file_system_id: String,
+    pub root_directory: Option<String>,
+    pub transit_encryption: Option<String>,
+    pub transit_encryption_port: Option<i64>,
+}
+impl EFSVolumeConfiguration {
+    pub fn to_rusoto(&self) -> rusoto_ecs::EFSVolumeConfiguration {
+        rusoto_ecs::EFSVolumeConfiguration {
+            authorization_config: self.authorization_config.as_ref().map(|a| a.to_rusoto()),
+            file_system_id: self.file_system_id.to_owned(),
+            root_directory: self.root_directory.to_owned(),
+            transit_encryption: self.transit_encryption.to_owned(),
+            transit_encryption_port: self.transit_encryption_port.to_owned(),
+        }
+    }
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct EFSAuthorizationConfig {
+    pub access_point_id: Option<String>,
+    pub iam: Option<String>,
+}
+impl EFSAuthorizationConfig {
+    pub fn to_rusoto(&self) -> rusoto_ecs::EFSAuthorizationConfig {
+        rusoto_ecs::EFSAuthorizationConfig {
+            access_point_id: self.access_point_id.to_owned(),
+            iam: self.iam.to_owned(),
+        }
+    }
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct HostVolumeProperties {
     pub source_path: Option<String>,
 }
@@ -133,12 +174,31 @@ impl HostVolumeProperties {
 pub struct DeploymentConfiguration {
     pub maximum_percent: Option<i64>,
     pub minimum_healthy_percent: Option<i64>,
+    pub deployment_circuit_breaker: Option<DeploymentCircuitBreaker>,
 }
 impl DeploymentConfiguration {
     pub fn to_rusoto(&self) -> rusoto_ecs::DeploymentConfiguration {
         rusoto_ecs::DeploymentConfiguration {
             maximum_percent: self.maximum_percent,
             minimum_healthy_percent: self.minimum_healthy_percent,
+            deployment_circuit_breaker: self
+                .deployment_circuit_breaker
+                .as_ref()
+                .map(|d| d.to_rusoto()),
+        }
+    }
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct DeploymentCircuitBreaker {
+    pub enable: bool,
+    pub rollback: bool,
+}
+impl DeploymentCircuitBreaker {
+    pub fn to_rusoto(&self) -> rusoto_ecs::DeploymentCircuitBreaker {
+        rusoto_ecs::DeploymentCircuitBreaker {
+            enable: self.enable,
+            rollback: self.rollback,
         }
     }
 }
@@ -175,6 +235,7 @@ pub struct ContainerDefinition {
     pub docker_security_options: Option<StringList>,
     pub entry_point: Option<StringList>,
     pub environment: Option<EnvironmentVariables>,
+    pub environment_files: Option<Vec<EnvironmentFile>>,
     pub essential: Option<BoxedBoolean>,
     pub extra_hosts: Option<HostEntryList>,
     pub hostname: Option<String>,
@@ -218,6 +279,10 @@ impl ContainerDefinition {
             entry_point: self.entry_point.to_owned(),
             environment: self
                 .environment
+                .as_ref()
+                .map(|e| e.iter().map(|e0| e0.to_rusoto()).collect()),
+            environment_files: self
+                .environment_files
                 .as_ref()
                 .map(|e| e.iter().map(|e0| e0.to_rusoto()).collect()),
             essential: self.essential,
@@ -344,6 +409,20 @@ impl Secret {
         rusoto_ecs::Secret {
             name: self.name.to_owned(),
             value_from: self.value_from.to_owned(),
+        }
+    }
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct EnvironmentFile {
+    pub type_: String,
+    pub value: String,
+}
+impl EnvironmentFile {
+    pub fn to_rusoto(&self) -> rusoto_ecs::EnvironmentFile {
+        rusoto_ecs::EnvironmentFile {
+            type_: self.type_.to_owned(),
+            value: self.value.to_owned(),
         }
     }
 }
