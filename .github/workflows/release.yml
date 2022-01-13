@@ -1,0 +1,56 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  build:
+    name: Release binary
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Cross build
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: build
+          args: --release --target ${{ matrix.target }} --verbose
+
+      - name: Package binaries
+        run: |
+          src=$(pwd)
+          stage=$(mktemp -d)
+
+          cp target/${{ matrix.target }}/release/racco $stage/
+          cd $stage
+          tar czf $src/racco-${{ github.ref_name }}-${{ matrix.target }}.tar.gz *
+          cd $src
+          rm -rf $stage
+
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@2.1.1
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: racco-${{ github.ref_name }}-${{ matrix.target }}.tar.gz
+          asset_name: racco-${{ github.ref_name }}-${{ matrix.target }}.tar.gz
+          tag: ${{ github.ref }}
+          prerelease: true
