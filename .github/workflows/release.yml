@@ -42,7 +42,7 @@ jobs:
 
           cp target/${{ matrix.target }}/release/racco $stage/
           cd $stage
-          tar czf $src/racco-${{ github.ref }}-${{ matrix.target }}.tar.gz *
+          tar czf $src/racco-${{ github.ref_name }}-${{ matrix.target }}.tar.gz *
           cd $src
           rm -rf $stage
 
@@ -50,7 +50,7 @@ jobs:
         uses: svenstaro/upload-release-action@2.1.1
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: racco-${{ github.ref }}-${{ matrix.target }}.tar.gz
-          asset_name: racco-${{ github.ref }}-${{ matrix.target }}.tar.gz
+          file: racco-${{ github.ref_name }}-${{ matrix.target }}.tar.gz
+          asset_name: racco-${{ github.ref_name }}-${{ matrix.target }}.tar.gz
           tag: ${{ github.ref }}
           prerelease: true
