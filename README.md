@@ -1,7 +1,4 @@
-
 # Racco
-
-[![Build Status](https://travis-ci.org/micin-jp/racco.svg?branch=master)](https://travis-ci.org/micin-jp/racco)
 
 A deployment toolkit for AWS ECS. Racco runs deployment process by a configuration file user defined.
 
@@ -162,7 +159,6 @@ schedule_task:
           cpu: 20
           memory: 128
 ```
-
 
 ### Params
 
