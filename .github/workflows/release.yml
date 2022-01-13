@@ -28,17 +28,17 @@ jobs:
           toolchain: stable
           override: true
 
-      - name: Cross build with all features
+      - name: Cross build
         uses: actions-rs/cargo@v1
         with:
           use-cross: true
           command: build
-          args: --release --target ${{ matrix.target }} --all-features --verbose
+          args: --release --target ${{ matrix.target }} --verbose
 
       - name: Package binaries
         run: |
-          local src=$(pwd) \
-                stage=$(mktemp -d)
+          src=$(pwd)
+          stage=$(mktemp -d)
 
           cp target/${{ matrix.target }}/release/racco $stage/
           cd $stage
