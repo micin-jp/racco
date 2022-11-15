@@ -92,6 +92,10 @@ pub trait Executer {
             requires_compatibilities: task_definition_conf.requires_compatibilities.to_owned(),
             cpu: task_definition_conf.cpu.to_owned(),
             memory: task_definition_conf.memory.to_owned(),
+            proxy_configuration: task_definition_conf
+                .proxy_configuration
+                .as_ref()
+                .map(|pc| pc.to_rusoto()),
             ..Default::default()
         };
 

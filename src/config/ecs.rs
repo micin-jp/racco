@@ -26,6 +26,7 @@ pub struct TaskDefinition {
     pub execution_role_arn: Option<String>,
     pub cpu: Option<String>,
     pub memory: Option<String>,
+    pub proxy_configuration: Option<ProxyConfiguration>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -164,6 +165,25 @@ impl HostVolumeProperties {
     pub fn to_rusoto(&self) -> rusoto_ecs::HostVolumeProperties {
         rusoto_ecs::HostVolumeProperties {
             source_path: self.source_path.to_owned(),
+        }
+    }
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct ProxyConfiguration {
+    pub container_name: String,
+    pub properties: Option<Vec<KeyValuePair>>,
+    pub type_: Option<String>,
+}
+impl ProxyConfiguration {
+    pub fn to_rusoto(&self) -> rusoto_ecs::ProxyConfiguration {
+        rusoto_ecs::ProxyConfiguration {
+            container_name: self.container_name.to_owned(),
+            properties: self
+                .properties
+                .as_ref()
+                .map(|p| p.iter().map(|p0| p0.to_rusoto()).collect()),
+            type_: self.type_.to_owned(),
         }
     }
 }
