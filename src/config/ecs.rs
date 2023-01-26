@@ -13,6 +13,7 @@ pub struct Service {
     pub service_registries: Option<Vec<ServiceRegistry>>,
     pub platform_version: Option<String>,
     pub enable_execute_command: Option<bool>,
+    pub tags: Option<Tags>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -670,3 +671,20 @@ impl Tmpfs {
         }
     }
 }
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct Tag {
+    pub key: Option<String>,
+    pub value: Option<String>,
+}
+
+impl Tag {
+    pub fn to_rusoto(&self) -> rusoto_ecs::Tag {
+        rusoto_ecs::Tag {
+            key: self.key.to_owned(),
+            value: self.value.to_owned(),
+        }
+    }
+}
+
+pub type Tags = Vec<Tag>;

@@ -83,6 +83,9 @@ service:
                 awslogs-group: 'racco'
                 awslogs-region: 'ap-northeast-1'
                 awslogs-stream-prefix: 'racco-web-nginx'
+      tags:
+        - key: Environment
+          value: Production
 ```
 
 ### Run task
