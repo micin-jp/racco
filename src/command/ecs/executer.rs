@@ -131,6 +131,10 @@ pub trait Executer {
             task_definition: Some(task_definition.to_owned()),
             platform_version: service_conf.platform_version.to_owned(),
             enable_execute_command: service_conf.enable_execute_command,
+            tags: service_conf
+                .tags
+                .as_ref()
+                .map(|ts| ts.iter().map(|t| t.to_rusoto()).collect()),
             ..Default::default()
         };
 

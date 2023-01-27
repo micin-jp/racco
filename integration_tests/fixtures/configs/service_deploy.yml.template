@@ -20,3 +20,6 @@ service:
             memory: 128
             port_mappings:
               - container_port: 80
+      tags:
+        - key: Environment
+          value: Production

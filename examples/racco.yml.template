@@ -29,6 +29,9 @@ service:
                 awslogs-group: '$AWSLOGS_GROUP'
                 awslogs-region: 'ap-northeast-1'
                 awslogs-stream-prefix: 'racco-web-nginx'
+      tags:
+        - key: Environment
+          value: Production
 run_task:
   - name: racco-job
     cluster: 'racco-cluster'
