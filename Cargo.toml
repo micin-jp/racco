@@ -1,6 +1,6 @@
 [package]
 name = "racco"
-version = "0.7.1"
+version = "0.8.0"
 authors = ["Daichi Sakai <daisaru11@gmail.com>"]
 license = "MIT"
 repository = "https://github.com/micin-jp/racco"
